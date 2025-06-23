@@ -1,0 +1,417 @@
+#!/usr/bin/env bash
+# Usage: lcars help [options] [--] <lcars-command>
+# Summary: Prints help for LCARS commands
+#
+# NAME
+#   lcars help -- print help for LCARS commands
+#
+# SYNOPSIS
+#   lcars help [options] [--] <lcars-command>
+#
+# DESCRIPTION
+#   Print help messages for the various LCARS commands.
+#
+# OPTIONS
+#   -u, --usage
+#       Print usage and exit.
+#
+#   -e code, --exit code
+#       Exit code to return after printing help, default is 0
+#
+#   -f flag, --flag flag
+#       Help flag that was passed to a program, `-h` or `--help`
+#
+# EXAMPLES
+#   Normal operation:
+#
+#   Show an overview of all LCARS commands
+#   $ lcars help
+#
+#   Get help for a specific LCARS command
+#   $ lcars help COMMAND
+#
+#   The `-f flag` option is useful for other LCARS scripts to accept
+#   `-h` or `--help` as arguments. For example:
+#
+#     case "$1" in
+#       -h | --help) exec lcars-help --flag "$1" COMMAND;;
+#       ...
+#     esac
+#
+#   When the script receives `-h` it will print a single usage line only. When
+#   `--help` is received full help info is printed.
+#
+#   The `-e code` option is useful for LCARS scripts to print help info when
+#   they are called incorrectly. For example, if a script accepted one
+#   argument only:
+#
+#     if [[ $# -ne 1 ]]; then
+#       warn "Invalid usage"
+#       exec lcars-help --exit 1 --flag --help some-script
+#     fi
+#
+# WRITING DOCS
+#   Documentation is contained within C style comments (eg: `# `) at the top
+#   of a LCARS script, just under the shebang. There are three sections:
+#
+#     Usage:   Short one line usage example
+#     Summary: Short one line summary of the script
+#     Help:    Multiline text containing extended help info
+#
+#   For example:
+#
+#     #!/usr/bin/env bash
+#     # Usage: lcars foo [options]
+#     # Summary: It foobars!
+#     #
+#     # SYNOPSIS
+#     #   lcars foo [options]
+#     #
+#     # OPTIONS
+#     #   -h, --help
+#     #       Print help info
+#
+#     echo "Foobar!"
+#
+#     case "${1}" in
+#       -h | --help) exec lcars-help --flag "${1}" foo;;
+#     esac
+#
+#   When running `lcars foo -h`, the usage will be printed:
+#
+#     $ lcars foo -h
+#     Usage: lcars foo [options
+#
+#   When running `lcars foo --help` or `lcars help foo`, the full help is
+#   printed:
+#
+#     $ lcars foo --help
+#     Usage: lcars foo [options]
+#
+#     SYNOPSIS
+#       lcars foo [options]
+#
+#     OPTIONS
+#       -h, --help
+#           Print help info
+#
+#   When running `lcars help`, this command will be included in the list with
+#   its summary:
+#
+#   ...
+#   COMMANDS
+#        foo                  It foobars!
+#   ...
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+[[ -t 1 ]] && ansi=1
+
+# Prints the lcars command path if it can be found.
+#
+# $1 - Name
+command_path() {
+  local command_name command_path
+
+  command_name="${1:-}"
+  command_path="$_LCARS_ROOT/libexec/lcars-$command_name"
+
+  if [[ -x "$command_path" ]]; then
+    printf "%s\\n" "$command_path"
+  else
+    true
+  fi
+}
+
+# Truncates a string by the given length.
+#
+# $1 - Max length
+# $2 - String
+truncate() {
+  local max_length="$1"
+  local string="$2"
+
+  if [[ "${ansi:-}" ]] && [[ "${#string}" -gt "$max_length" ]]; then
+    local length=$(( max_length - 3 ))
+    echo "${string:0:$length}..."
+  else
+    echo "$string"
+  fi
+}
+
+# Print all lcars commands and their summaries.
+print_summaries() {
+  local commands=()
+  local summaries=()
+  local longest_command=0
+  local command summary_length index columns
+
+  for command in $(lcars-cli:commands); do
+    local file
+
+    file="$(command_path "$command")"
+
+    if [[ ! -h "$file" ]]; then
+      local summary="" usage="" help=""
+
+      eval "$(documentation_for "$file")"
+
+      if [[ "${summary:-}" ]]; then
+        commands["${#commands[@]}"]="$command"
+        summaries["${#summaries[@]}"]="$summary"
+
+        if [[ "${#command}" -gt "$longest_command" ]]; then
+          longest_command="${#command}"
+        fi
+      fi
+    fi
+  done
+
+  read -r _ columns < <(stty size)
+
+  summary_length=$(( columns - longest_command - 4 ))
+
+  for (( index=0; index < ${#commands[@]}; index++ )); do
+    printf "  %-${longest_command}s  %s\\n" "${commands[$index]}" \
+      "$(truncate "${summary_length}" "${summaries[$index]}")"
+  done
+}
+
+# Find all symlinks in libexec and print them => target
+print_aliases() {
+  lcars-cli:aliases | awk -F': ' '{
+    printf "  %s:\t%s\n", $1, $2
+  }' | column -t -s $'\t'
+}
+
+# Formats STDIN for final output.
+format() {
+  { if [[ "${ansi:-}" ]]; then
+      sed -E "s/^([A-Z0-9][A-Z0-9 ]+)\$/$(color:on bold)\\1$(color:off)/"
+    else
+      cat
+    fi
+  } | awk '
+      /[[:graph:]]/ { p=1; for (i=1; i<=n; i++) print ""; n=0; print; }
+      p && /^[[:space:]]*$/ { n++ }
+    '
+}
+
+# Print help docs for the given file.
+#
+# $1 - file
+# $2 - section (default `all`, allowed: `all`, `usage`)
+print_help() {
+  local file="$1"
+  local section="${2:-all}"
+  local summary usage help
+
+  [[ -f "$file" ]] || abort "file '$file' does not exist."
+
+  eval "$(documentation_for "$file")"
+
+  [[ -z "${help:-}" ]] && help="${summary:-}"
+
+  if [[ "${usage:-}" ]]; then
+    [[ "${section}" =~ ^(usage|all)$ ]] && echo "$usage"
+
+    if [[ "$section" = "all" ]] && [[ "${help:-}" ]]; then
+      echo
+      echo "$help" | format
+    fi
+  else
+    abort "sorry, this command isn't documented yet."
+  fi
+}
+
+# Prints raw help docs from the given file with comments removed.
+extract_initial_comment_block() {
+  sed -ne "
+    /^#/ !{
+      q
+    }
+
+    s/^#$/# /
+
+    /^# / {
+      s/^# //
+      p
+    }
+  "
+}
+
+# Parses Summary, Usage, and Help info from documentation on STDIN. If Usage
+# or Summary are found, output can be used by `eval` to assign `$summary`,
+# `$usage`, and `$help`.
+collect_documentation() {
+  awk '
+    /^Summary:/ {
+      summary = substr($0, 10)
+      next
+    }
+
+    /^Usage:/ {
+      reading_usage = 1
+      usage = usage "\n" $0
+      next
+    }
+
+    /^( *$|       )/ && reading_usage {
+      usage = usage "\n" $0
+      next
+    }
+
+    {
+      reading_usage = 0
+      help = help "\n" $0
+    }
+
+    function escape(str) {
+      gsub(/[`\\$"]/, "\\\\&", str)
+      return str
+    }
+
+    function trim(str) {
+      sub(/^\n*/, "", str)
+      sub(/\n*$/, "", str)
+      return str
+    }
+
+    END {
+      if (usage || summary) {
+        print "summary=\"" escape(summary) "\""
+        print "usage=\"" escape(trim(usage)) "\""
+        print "help=\"" escape(trim(help)) "\""
+      }
+    }
+  '
+}
+
+# Gets documentation for the given filename. If or Summary are found, output
+# can be used by `eval` to assign `$summary`, `$usage`, and `$help`.
+#
+# Example
+#   local summary usage help
+#   eval "$(documentation_for "path/to/command")"
+documentation_for() {
+  local filename="$1"
+
+  if [[ -n "$filename" ]]; then
+    extract_initial_comment_block < "$filename" | collect_documentation
+  fi
+}
+
+complete_commands() {
+  # based on rbenv-help
+  local command_prefix seen path lcars_command command_name summary
+
+  command_prefix="${1:-}"
+  seen=()
+  shopt -s nullglob
+  PATH_remain="$PATH"
+  # traverse PATH to find "lcars-" prefixed commands
+  while true; do
+    path="${PATH_remain%%:*}"
+    if [ -n "$path" ]; then
+      for lcars_command in "${path}/lcars-"*; do
+        command_name="${lcars_command##*/}"
+        command_name="${command_name#lcars-}"
+        # command_name="${command_name#sh-}"
+        [[ $command_name == "${command_prefix}"* ]] || continue
+        [[ " ${seen[*]} " != *" ${command_name} "* ]] || continue
+        seen+=("$command_name")
+        summary=""
+        eval "$(extract_initial_comment_block < "$lcars_command" | collect_documentation)"
+        [ -n "$summary" ] || continue
+        printf "%s:%s\n" "${command_name//:/\\:}" "$summary"
+      done
+    fi
+    [[ $PATH_remain == *:* ]] || break
+    PATH_remain="${PATH_remain#*:}"
+  done
+}
+
+# Provide lcars completions
+completions() {
+  lcars-cli:commands
+}
+
+main() {
+  local argv field file summaries action=show_help
+
+  argv=$(getopt \
+    --name "lcars ${0##*/lcars-}" \
+    --options e:f:u \
+    --longoptions exit:,flag:,usage,complete-commands,complete \
+    -- \
+    "$@"
+  ) || return $?
+
+  eval "set -- $argv"
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -e | --exit) exit_code="$2"; shift 2;;
+      -f | --flag)
+        case "$2" in
+          -h) field=usage; shift 2;;
+          --help) field=all; shift 2;;
+          *) abort "invalid flag '$2'";;
+        esac
+        ;;
+      -u | --usage) field=usage; shift;;
+      --complete-commands) action=complete_commands; shift ;;
+      --complete) action=complete; shift;;
+      --) shift; break;;
+      *) break;;
+    esac
+  done
+
+  if [[ "${action-}" = complete_commands ]]; then
+    complete_commands "$@"
+    return 0
+  elif [[ "${action-}" = complete ]]; then
+    completions
+    return 0
+  fi
+
+  if [[ "${1:-}" ]]; then
+    file="$(command_path "$1")"
+
+    if [[ "$file" ]]; then
+      print_help "$file" "${field:-all}"
+    else
+      abort "no such command \`$1'"
+    fi
+  else
+    summaries="$(print_summaries)"
+    aliases="$(print_aliases)"
+
+    print_help "$(command -v lcars)" "${field:-all}"
+
+    if [[ "${field:-all}" = "all" ]]; then
+      echo
+      echo "COMMANDS" | format
+      echo "$summaries"
+      echo
+      echo "See \`lcars help <command>' for information on a specific command."
+      echo
+      echo "ALIASES" | format
+      echo "$aliases" | format
+    fi
+  fi
+
+  return "${exit_code:-0}"
+}
+
+main "$@"

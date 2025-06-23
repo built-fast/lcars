@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# Usage: lcars util:ip
+# Summary: Prints public IP address using CloudFlare DNS
+# NAME
+#   lcars util:ip -- Get your public IP address from CloudFlare DNS
+#
+# OPTIONS
+#   -4
+#     Check IPv4 address.
+#
+#   -6
+#     Check IPv6 address.
+#
+#   -h, --help
+#     Print this help message and exit.
+#
+# SEE ALSO
+#   dig(1)
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+main() {
+  case "${1:--4}" in
+    -4) ip_version=4 ;;
+    -6) ip_version=6 ;;
+    *)
+      warn "Error: Invalid arguments"
+      exec lcars-help --usage util:ip
+      ;;
+  esac
+
+  { if [ "${ip_version:-4}" = "4" ]; then
+      dig -4 ch txt whoami.cloudflare +short @1.1.1.1
+    else
+      dig -6 ch txt whoami.cloudflare +short @2606:4700:4700::1111
+    fi
+  } | tr -d '"'
+}
+
+main "$@"

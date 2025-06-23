@@ -1,0 +1,214 @@
+#!/usr/bin/env bash
+# Usage: lcars test:shellcheck [options] [-- path ...]
+# Summary: Runs ShellCheck on all Bash files in the project
+#
+# NAME
+#   lcars test:shellcheck -- Run ShellCheck on all Bash files in the project
+#
+# SYNOPSIS
+#   lcars test:shellcheck [options]
+#   lcars test:shellcheck [options] -- path [path ...]
+#   lcars test:shellcheck [options] -- :path [path :path ...]
+#
+# EXAMPLES
+#   lcars test:shellcheck                            # Check all bash files
+#   lcars test:shellcheck -- scripts/                # Check only files in scripts/
+#   lcars test:shellcheck -- :tests/                 # Exclude files in tests/
+#   lcars test:shellcheck -- scripts/ :scripts/old/  # Include scripts/, exclude scripts/old/
+#
+# DESCRIPTION
+#   lcars test:shellcheck runs ShellCheck on all Bash files in the project.
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+# Check if a file should be included based on include/exclude paths
+should_include_file() {
+  local file="$1"
+  shift
+  local include_paths=()
+  local exclude_paths=()
+  local path
+
+  for path in "$@"; do
+    [[ "${path: -1:1}" = "/" ]] && path="${path%/}"
+
+    if [[ "${path:0:1}" = ":" ]]; then
+      exclude_paths+=("${path:1}")
+    else
+      include_paths+=("$path")
+    fi
+  done
+
+  if [[ ${#include_paths[@]} -gt 0 ]]; then
+    local matches_include=0
+    for path in "${include_paths[@]}"; do
+      if [[ "$file" == "$path" ]] || [[ "$file" == "$path"/* ]]; then
+        matches_include=1
+        break
+      fi
+    done
+
+    if [[ $matches_include -eq 0 ]]; then
+      return 1
+    fi
+  fi
+
+  for path in "${exclude_paths[@]}"; do
+    if [[ "$file" == "$path" ]] || [[ "$file" == "$path"/* ]]; then
+      return 1
+    fi
+  done
+
+  return 0
+}
+
+# Find all bash (or bats) files in the current git repo
+find_bash_files() {
+  local untracked="$1"
+  local grep_args=()
+
+  if [[ "$untracked" = 1 ]]; then
+    grep_args+=(--untracked)
+  fi
+
+  grep_args+=(-l -E -e '^#!/bin/(ba)?sh' -e '^#!/usr/bin/env (ba)?sh$')
+
+  {
+    git ls-files '**.sh' '**.bash' '**.bats' 2>/dev/null
+
+    git grep "${grep_args[@]}"
+  } | sort | uniq
+}
+
+format_github() {
+  jq --raw-output \
+    --argjson types '{"error":"error","info":"notice","style":"notice","warning":"warning"}' \
+    --raw-output '.[] |
+      "::\($types[.level] // "notice") " +
+      "file=\(.file)," +
+      "line=\(.line)," +
+      "endLine=\(.endLine)," +
+      "col=\(.column)," +
+      "endColumn=\(.endColumn)," +
+      "title=ShellCheck SC\(.code) (\(.level))" +
+      "::\(.message) See https://github.com/koalaman/shellcheck/wiki/SC\(.code)"
+    '
+}
+
+format() {
+  local fmt="${1-}"
+
+  case "$fmt" in
+    github) format_github ;;
+    json) jq . ;;
+    *) cat ;;
+  esac
+}
+
+# Main program
+main() {
+  local bash_files=() args=() fmt=default color=auto untracked=0
+
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      --untracked)
+        untracked=1
+        shift
+        ;;
+      -f|--format=*)
+        if [[ "$1" = --format=github ]]; then
+          args+=(-f json)
+          fmt=github
+          shift
+        elif [[ "$1" = --format=json ]]; then
+          args+=(-f json)
+          fmt=json
+          shift
+        elif [[ "$2" = github ]]; then
+          args+=(-f json)
+          fmt=github
+          shift 2
+        elif [[ "$2" = json ]]; then
+          args+=(-f json)
+          fmt=json
+          shift 2
+        else
+          args+=(-f "${2-}")
+          shift 2
+        fi
+        ;;
+      -C*|--color=*)
+        if [[ "$1" = --color=* ]]; then
+          color="${1#--color=}"
+        else
+          color="${1#-C}"
+        fi
+
+        shift
+        ;;
+      -h|--help)
+        print_help "$1"
+        return 0
+        ;;
+      --)
+        shift
+        break
+        ;;
+      *)
+        args+=("$1")
+        shift
+        ;;
+    esac
+  done
+
+  if [[ "${CI-}" ]] && [[ "$fmt" = default ]]; then
+    args+=(-f json)
+    fmt=github
+  fi
+
+  while IFS= read -r file; do
+    if [[ "$#" -eq 0 ]] || should_include_file "$file" "$@"; then
+      bash_files+=("$file")
+    fi
+  done < <(find_bash_files "$untracked")
+
+  if [[ ${#bash_files[@]} -eq 0 ]]; then
+    if git rev-parse --is-inside-work-tree &>/dev/null; then
+      echo "No Bash files found in the current git repo" >&2
+      exit 0
+    else
+      echo "Not a git repo" >&2
+      exit 1
+    fi
+  fi
+
+  if ! type shellcheck &>/dev/null; then
+    echo "shellcheck is not installed" >&2
+    exit 1
+  fi
+
+  if ! type jq &>/dev/null; then
+    echo "jq is not installed" >&2
+    exit 1
+  fi
+
+  if [[ -t 1 ]] && [[ "$color" = auto ]]; then
+    color=always
+  fi
+
+  args+=("-C$color")
+
+  shellcheck "${args[@]}" "${bash_files[@]}" | format "$fmt"
+}
+
+main "$@"

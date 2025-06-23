@@ -1,0 +1,36 @@
+{
+  "libexec/lcars": {
+      "type": "libexec"
+  },
+  "libexec/lcars-*": {
+      "type": "libexec",
+      "template": [
+        "#!/usr/bin/env bash",
+        "# Usage: lcars {snakecase|hyphenate}",
+        "# Summary: It does something",
+        "#",
+        "# NAME",
+        "#   lcars {snakecase|hyphenate} -- It does something",
+        "#",
+        "# SYNOPSIS",
+        "#   lcars {snakecase|hyphenate}",
+        "#",
+        "# DESCRIPTION",
+        "#   lcars {snakecase|hyphenate} does something, alright. Good or bad, who knows?",
+        "",
+        "if [[ \"$LCARS_DEBUG\" ]]; then",
+        "  export PS4='+ [${open}BASH_SOURCE##*/{close}:$LINENO] '",
+        "  set -x",
+        "fi",
+        "",
+        "if [[ -z \"$_LCARS_ROOT\" ]]; then",
+        "  echo \"Error: Must run \\`${open}0//*\\/lcars-/lcars {close}' instead.\"",
+        "  exit 1",
+        "fi",
+        "",
+        "set -euo pipefail",
+        "",
+        "echo \"I'm in danger!\""
+      ]
+  }
+}

@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Usage: lcars util:paste
+# Summary: Pastes the contents of the clipboard
+#
+# NAME
+#   lcars util:paste -- Pastes the contents of the clipboard
+#
+# SYNOPSIS
+#   lcars util:paste
+#
+# DESCRIPTION
+#   lcars util:paste pastes the contents of the clipboard. It is a wrapper
+#   around the `pbpaste` command on macOS and `xclip` on Linux.
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+os="$(uname)"
+
+case "$os" in
+  Darwin*) pbpaste ;;
+  Linux*) xclip -selection clipboard -o ;;
+  *) abort "Unsupported OS: $os" ;;
+esac

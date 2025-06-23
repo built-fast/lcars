@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Usage: lcars cli:update
+# Summary: Updates LCARS
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+cd "$_LCARS_ROOT" || abort "Unable to change to LCARS root directory"
+
+git pull origin main

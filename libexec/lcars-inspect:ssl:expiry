@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+# Usage: lcars inspect:ssl:expiry
+# Summary: Prints SSL expiration dates for domains
+#
+# NAME
+#   lcars inspect:ssl:expiry -- Prints SSL expiration dates for domains
+#
+# SYNOPSIS
+#   lcars inspect:ssl:expiry
+#
+# DESCRIPTION
+#   lcars inspect:ssl:expiry prints the SSL expiration dates for the given
+#   domains.
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+check_cert() {
+  local domain="$1"
+  local port="${2:-443}"
+  local expiry
+
+  if [[ "$domain" == *":"* ]]; then
+    port="${domain#*:}"
+    domain="${domain%%:*}"
+  fi
+
+  expiry=$(echo | openssl s_client \
+    -servername "$domain" \
+    -connect "$domain:$port" 2>/dev/null |
+    openssl x509 -noout -enddate |
+    sed 's/.*=//'
+  )
+
+  jq -Rn \
+    --arg domain "$domain" \
+    --arg expiry "$expiry" \
+    '{
+      "\($domain)": ($expiry | strptime("%b %d %H:%M:%S %Y %Z") | strftime("%FT%T.000%z"))
+    }'
+}
+
+if [[ $# -eq 0 ]]; then
+  exec lcars-cli:help -u inspect:ssl:expiry
+fi
+
+for domain in "$@"; do check_cert "$domain"; done |
+  jq -s 'add' |
+  jq -r 'to_entries[] | "\(.key)\t\(.value)"' |
+  column -t -s $'\t'

@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Usage: lcars-test:pest
+# Summary: Runs Pest test suite
+#
+# NAME
+#   lcars-test:pest -- Run Pest test suite
+#
+# SYNOPSIS
+#   lcars-test:pest
+#
+# DESCRIPTION
+#   lcars-test:pest runs the Pest test suite on the project.
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+composer exec -- pest "$@"

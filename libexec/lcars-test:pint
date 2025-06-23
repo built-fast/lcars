@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Usage: lcars-test:pint
+# Summary: Runs Pint on PHP files in the project
+#
+# NAME
+#   lcars-test:pint -- Run Pint on PHP files in the project
+#
+# SYNOPSIS
+#   lcars-test:pint
+#
+# DESCRIPTION
+#   lcars-test:pint runs Pint on PHP files in the project.
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+composer exec -- pint --test --format=txt --verbose "$@"

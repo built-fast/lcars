@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Usage: lcars inspect:php:ext <extension>
+# Summary: Checks if a PHP extension is installed
+#
+# NAME
+#   lcars inspect:php:ext -- check if a PHP extension is installed
+#
+# SYNOPSIS
+#   lcars-ig
+#
+# DESCRIPTION
+#   lcars inspect:php:ext checks if a PHP extension is installed. Exits 0 if the
+#   extension is installed, 1 if it is not.
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+if [[ $# -ne 1 ]]; then
+  exec lcars-cli:help --flag -h inspect:php:ext
+fi
+
+if php:has_extension "$1" &> /dev/null; then
+  echo "$1 is installed"
+else
+  echo "$1 is missing"
+  exit 1
+fi

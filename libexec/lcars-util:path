@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# Usage: lcars util:path [-f|--full]
+# Summary: Prints your current PATH
+#
+# NAME
+#   lcars util:path -- Show your current PATH
+#
+# SYNOPSIS
+#   lcars util:path
+#   lcars util:path [-f|--full]
+#
+# Description:
+#   `lcars util:path` shows your current PATH. Pass `-f` to view all
+#   scripts in each directory.
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+# Provide lcars completions
+if [[ "$1" = "--complete" ]]; then
+  echo -f
+  echo --full
+
+  exit 0
+fi
+
+get_path() {
+  # Strip first $_LCARS_ROOT/libexec
+  if [[ "$_LCARS_ROOT" ]] && [[ "$PATH" =~ ^$_LCARS_ROOT/libexec: ]]; then
+    echo "${PATH#*/libexec:}"
+  else
+    echo "$PATH"
+  fi
+}
+
+inspect_paths() {
+  local path
+
+  path=$(get_path)
+
+  echo -e "${path//:/$'\n'}"
+}
+
+inspect_path_scripts() {
+  shopt -s nullglob
+
+  while read -r dir; do
+    echo "$dir:"
+    for bin in "$dir"/*; do
+      echo "  $bin"
+    done
+    echo
+  done < <(inspect_paths)
+
+  shopt -u nullglob
+}
+
+if [[ "$1" =~ ^-f|--full$ ]]; then
+  inspect_path_scripts
+else
+  inspect_paths
+fi

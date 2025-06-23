@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# Usage: lcars completions <command> [<args>...]
+#
+# NAME
+#   lcars completions -- Print lcars completions
+#
+# SYNOPSIS
+#   lcars completions
+#
+# DESCRIPTION
+#   lcars completions prints lcars completions for the specified command.
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -e
+
+COMMAND="$1"
+if [ -z "$COMMAND" ]; then
+  lcars-help --usage completions >&2
+  exit 1
+fi
+
+# Provide lcars completions
+if [ "$COMMAND" = "--complete" ]; then
+  exec lcars-commands
+fi
+
+COMMAND_PATH="$(type -P "lcars-$COMMAND" | head -n1)"
+
+# --help is provided automatically
+echo --help
+
+if grep -iE "^([#%]|--|//) provide lcars completions" "$COMMAND_PATH" &>/dev/null; then
+  shift
+  exec "$COMMAND_PATH" --complete "$@"
+fi

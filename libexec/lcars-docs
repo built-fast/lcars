@@ -1,0 +1,176 @@
+#!/usr/bin/env bash
+# Usage: lcars docs [<page>, ...]
+# Summary: Open Laravel documentation pages
+#
+# NAME
+#   lcars docs -- Open Laravel documentation pages
+#
+# SYNOPSIS
+#   lcars docs [<page>, ...]
+#   lcars docs --list
+#
+# DESCRIPTION
+#   lcars docs uses fzf to open a Laravel documentation page in the default
+#   web browser. Press tab within fzf to tag multiple pages to open.
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+# git clone laravel/docs
+# cd docs
+# rm readme.md license.md documentation.md
+# for f in *; do echo "${f%*.md}   $(head -1 "$f" | sed 's/^#//')"; done
+DOCS=(
+  "artisan	 Artisan Console"
+  "authentication	 Authentication"
+  "authorization	 Authorization"
+  "billing	 Laravel Cashier (Stripe)"
+  "blade	 Blade Templates"
+  "broadcasting	 Broadcasting"
+  "cache	 Cache"
+  "cashier-paddle	 Laravel Cashier (Paddle)"
+  "collections	 Collections"
+  "concurrency	 Concurrency"
+  "configuration	 Configuration"
+  "console-tests	 Console Tests"
+  "container	 Service Container"
+  "context	 Context"
+  "contracts	 Contracts"
+  "contributions	 Contribution Guide"
+  "controllers	 Controllers"
+  "csrf	 CSRF Protection"
+  "database-testing	 Database Testing"
+  "database	 Database: Getting Started"
+  "deployment	 Deployment"
+  "dusk	 Laravel Dusk (Browser Testing)"
+  "eloquent-collections	 Eloquent: Collections"
+  "eloquent-factories	 Eloquent: Factories"
+  "eloquent-mutators	 Eloquent: Mutators & Casting"
+  "eloquent-relationships	 Eloquent: Relationships"
+  "eloquent-resources	 Eloquent: API Resources"
+  "eloquent-serialization	 Eloquent: Serialization"
+  "eloquent	 Eloquent: Getting Started"
+  "encryption	 Encryption"
+  "envoy	 Laravel Envoy (Remote Task Runner)"
+  "errors	 Error Handling"
+  "events	 Events"
+  "facades	 Facades"
+  "filesystem	 File Storage"
+  "folio	 Laravel Folio (Static Pages)"
+  "fortify	 Laravel Fortify (\"Headless\" Authentication)"
+  "frontend	 Frontend"
+  "hashing	 Hashing"
+  "helpers	 Helpers"
+  "homestead	 Laravel Homestead (Vagrant)"
+  "horizon	 Laravel Horizon (Queues)"
+  "http-client	 HTTP Client"
+  "http-tests	 HTTP Tests"
+  "installation	 Installation"
+  "lifecycle	 Request Lifecycle"
+  "localization	 Localization"
+  "logging	 Logging"
+  "mail	 Mail"
+  "middleware	 Middleware"
+  "migrations	 Database: Migrations"
+  "mix	 Laravel Mix (webpack)"
+  "mocking	 Mocking"
+  "mongodb	 MongoDB"
+  "notifications	 Notifications"
+  "octane	 Laravel Octane (High-Performance Server)"
+  "packages	 Package Development"
+  "pagination	 Database: Pagination"
+  "passport	 Laravel Passport (OAuth2 Server)"
+  "passwords	 Resetting Passwords"
+  "pennant	 Laravel Pennant (Feature Flags)"
+  "pint	 Laravel Pint (PHP-CS-Fixer)"
+  "precognition	 Precognition"
+  "processes	 Processes"
+  "prompts	 Prompts"
+  "providers	 Service Providers"
+  "pulse	 Laravel Pulse (Performance Monitoring)"
+  "queries	 Database: Query Builder"
+  "queues	 Queues"
+  "rate-limiting	 Rate Limiting"
+  "redirects	 HTTP Redirects"
+  "redis	 Redis"
+  "releases	 Release Notes"
+  "requests	 HTTP Requests"
+  "responses	 HTTP Responses"
+  "reverb	 Laravel Reverb (WebSockets)"
+  "routing	 Routing"
+  "sail	 Laravel Sail (Docker)"
+  "sanctum	 Laravel Sanctum (API/SPA Authentication)"
+  "scheduling	 Task Scheduling"
+  "scout	 Laravel Scout (Full-Text Search)"
+  "seeding	 Database: Seeding"
+  "session	 HTTP Session"
+  "socialite	 Laravel Socialite (Social Authentication with OAuth)"
+  "starter-kits	 Starter Kits"
+  "strings	 Strings"
+  "structure	 Directory Structure"
+  "telescope	 Laravel Telescope (Debugging Assistant)"
+  "testing	 Testing: Getting Started"
+  "upgrade	 Upgrade Guide"
+  "urls	 URL Generation"
+  "valet	 Laravel Valet (MacOS Development Environment)"
+  "validation	 Validation"
+  "verification	 Email Verification"
+  "views	 Views"
+  "vite	 Asset Bundling (Vite)"
+)
+
+render() {
+  printf '%s\n' "${DOCS[@]}" | column -t -s$'\t'
+}
+
+DOCS_URL="https://laravel.com/docs/12.x"
+
+# Provide lcars completions
+if [[ "${1:-}" = --complete ]]; then
+  echo --list
+
+  render | awk '{ print $1 }'
+
+  exit 0
+elif [[ "${1:-}" = --list ]]; then
+  {
+    printf "%s\t%s\n" "Page" "Description"
+
+    render | awk -v url="$DOCS_URL" '{
+      printf "%s/%s\t", url, $1
+      for (i=2; i<=NF; i++) printf "%s ", $i
+      printf "\n"
+    }'
+  } | column -t -s$'\t'
+
+  exit 0
+fi
+
+if [[ $# -gt 0 ]]; then
+  urls=()
+
+  for arg in "$@"; do
+    urls+=("$DOCS_URL/$arg")
+  done
+
+  open "${urls[@]}"
+else
+  chosen=$(render | fzf --multi | awk -v url="$DOCS_URL" '{ printf "%s/%s\n", url, $1 }') || exit 1
+
+  urls=()
+
+  while IFS= read -r line; do
+    urls+=("$line")
+  done <<< "$chosen"
+
+  open "${urls[@]}"
+fi

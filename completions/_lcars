@@ -1,0 +1,13 @@
+#compdef lcars
+
+_lcars() {
+  local completions
+
+  if [ "${#words}" -eq 2 ]; then
+    completions=(${(f)"$(lcars help --complete-commands "${words[2]}")"})
+    _describe 'lcars commands' completions
+  else
+    completions="$(lcars completions ${words[2,-2]})"
+    compadd - "${(ps:\n:)completions}"
+  fi
+}

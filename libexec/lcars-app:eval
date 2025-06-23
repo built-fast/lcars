@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# Usage: lcars app:eval
+# Summary: Runs the given PHP code in the context of a Laravel application
+#
+# NAME
+#   lcars app:eval -- Runs the given PHP code in the context of a Laravel
+#                     application
+#
+# SYNOPSIS
+#   lcars app:eval
+#
+# DESCRIPTION
+#   lcars app:eval runs the given PHP code in the context of a Laravel
+#   application.
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+php artisan tinker --execute "${1:-$(cat)}"

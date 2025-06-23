@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# Usage: lcars cli:aliases
+# Summary: Lists all LCARS aliases
+#
+# NAME
+#   lcars cli:aliases -- List all LCARS aliases
+#
+# SYNOPSIS
+#   lcars cli:aliases
+#
+# DESCRIPTION
+#   lcars cli:aliases lists all LCARS aliases.
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+
+main() {
+  shopt -s nullglob
+
+  local file command target
+
+  for file in "$_LCARS_ROOT"/libexec/lcars-*; do
+    if [[ -h "$file" ]]; then
+      command="${file##*/lcars-}"
+      command="${command%%.*}"
+
+      target="$(readlink -f "$file")"
+      target="${target##*/lcars-}"
+
+      printf "%s: %s\\n" "$command" "$target"
+    fi
+  done | sort | column -t -s $'\t'
+
+  shopt -u nullglob
+}
+
+main "$@"

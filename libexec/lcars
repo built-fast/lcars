@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+# Usage: lcars <command>
+#
+# NAME
+#   lcars -- Laravel CLI and Reusable Scripts
+#
+# SYNOPSIS
+#   lcars <command>
+#
+# DESCRIPTION
+#   LCARS contains CLI tools for working with Laravel projects.
+#
+# OPTIONS
+#   -h
+#       Print short help and exit.
+#
+#   --help
+#       Print full help text and exit. Same as `lcars help`.
+#
+#   --root
+#       Print the root directory that LCARS is installed to and exit.
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  set -x
+fi
+
+set -e
+
+resolve_link() {
+  $(type -p greadlink readlink | head -1) "$1"
+}
+
+abs_dirname() {
+  local cwd
+  local path="$1"
+
+  cwd="$(pwd)"
+
+  while [ -n "$path" ]; do
+    cd "${path%/*}"
+    local name="${path##*/}"
+    path="$(resolve_link "$name" || true)"
+  done
+
+  pwd
+  cd "$cwd"
+}
+
+libexec_path="$(abs_dirname "$0")"
+_LCARS_ROOT="$(abs_dirname "$libexec_path")"
+export _LCARS_ROOT
+
+PATH="${libexec_path}:$PATH"
+
+# shellcheck disable=SC1091
+source "$_LCARS_ROOT/share/lcars/stdlib.sh"
+
+command="$1"
+
+case "$command" in
+  "" | -h | --help)
+    exec lcars-cli:help
+    ;;
+  --root)
+    # If `lcars --root` was called, print the directory this project is
+    # installed to and exit.
+    echo "$_LCARS_ROOT"
+    exit 0
+    ;;
+  *)
+    command_path="$(command -v "lcars-$command" || true)"
+    if [ ! -x "$command_path" ]; then
+      echo "lcars: no such command \`$command'" >&2
+      exit 1
+    fi
+
+    shift
+
+    if [[ "${1:-}" =~ ^(-h|--help)$ ]]; then
+      # If someone requested `lcars <command> -h|--help` show the appropriate
+      # help text. This eliminates the need for each script to respond to
+      # `-h` and `--help`.
+      exec lcars-cli:help --flag "$1" "$command"
+    else
+      [[ "${1:-}" = "--" ]] && shift
+
+      # Otherwise, run the requested script from the libexec directory
+      exec "$command_path" "$@"
+    fi
+    ;;
+esac

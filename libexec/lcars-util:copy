@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Usage: lcars util:copy
+# Summary: Copies strings to the clipboard
+#
+# NAME
+#   lcars util:copy -- It does something
+#
+# SYNOPSIS
+#   lcars util:copy <string>
+#   lcars util:copy <<< <string>
+#   command | lcars util:copy
+#
+# DESCRIPTION
+#   lcars util:copy copies the given string to the clipboard. It is a wrapper
+#   around the `pbcopy` command on macOS and `xclip` on Linux.
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+os="$(uname)"
+
+case "$os" in
+  Darwin*) pbcopy ;;
+  Linux*) xclip -selection clipboard ;;
+  *) abort "Unsupported OS: $os" ;;
+esac <<< "${1:-$(cat)}"

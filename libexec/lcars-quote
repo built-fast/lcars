@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+# Usage: lcars quote [list | <source>]
+# Summary: Satisfaction is not guaranteed
+#
+# NAME
+#   lcars quote -- Random quotes for no reason
+#
+# SYNOPSIS
+#   lcars quote
+#
+# DESCRIPTION
+#   lcars quote is a simple script that returns a random quote.
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+QUOTE_DIR="${_LCARS_ROOT}/share/lcars/quotes"
+
+# Provide lcars completions
+list() {
+  local files=() file
+
+  for file in "$QUOTE_DIR"/*.json; do
+    file="${file##*/}"
+    file="${file%.json}"
+
+    files+=("$file")
+  done
+
+  if [[ ${#files[@]} -gt 0 ]]; then
+    printf '%s\n' "${files[@]}" | sort
+  else
+    echo "No quotes found."
+    return 1
+  fi
+}
+
+render() {
+  local selected author quote
+
+  selected=$(jq -s add "$@" | jq:array:random)
+  author="${selected##* - }"
+  quote="${selected% - *}"
+
+  color:on normal --italic
+  echo "$quote" | fold -s -w 78
+  color:off
+
+  echo
+  echo "  -- $(str:color "$author" blue --bold)"
+}
+
+main() {
+  local files=() file
+
+  while [[ $# -gt 0 ]]; do
+    if [[ "$1" =~ ^(--complete|--list) ]]; then
+      [[ "$1" == "--complete" ]] && echo --list
+      list
+      return $?
+    elif [[ "$1" =~ ^- ]]; then
+      warn "Error: Invalid option: $1"
+      return 1
+    else
+      file="$QUOTE_DIR/${1##*=}.json"
+
+      if [[ -f "$file" ]]; then
+        files+=("$file")
+        shift
+      else
+        warn "Error: File not found: $1"
+        return 1
+      fi
+    fi
+  done
+
+  if [[ ${#files[@]} -eq 0 ]]; then
+    files=("${_LCARS_ROOT}/share/lcars/quotes/"*)
+  fi
+
+  render "${files[@]}"
+}
+
+main "$@"

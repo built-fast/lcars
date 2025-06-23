@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Usage: lcars cli:config:set <key> <value>
+# Summary: Sets a local LCARS config
+#
+# NAME
+#   lcars cli:config:set -- Sets a local LCARS config
+#
+# SYNOPSIS
+#   lcars cli:config:set <key> <value>
+#
+# DESCRIPTION
+#   lcars cli:config:set sets a local LCARS config.
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+if [[ $# -ne 2 ]]; then
+  exec lcars-cli:help -u cli:config:set
+  exit 1
+fi
+
+lcars:config:set "$@"

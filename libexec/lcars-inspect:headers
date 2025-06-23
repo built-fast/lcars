@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# Usage: lcars inspect:headers
+# Summary: Makes a cURL request and prints the headers
+#
+# NAME
+#   lcars inspect:headers -- Make a CURL request and print the headers
+#
+# SYNOPSIS
+#   lcars inspect:headers [curl arguments]
+#
+# DESCRIPTION
+#   lcars inspect:headers makes a CURL request and prints the headers.
+#
+#   Example:
+#
+#     $ lcars inspect:headers -L google.com
+#     GET / HTTP/1.1
+#     Host: google.com
+#     User-Agent: curl/8.7.1
+#     Accept: */*
+#
+#     HTTP/1.1 301 Moved Permanently
+#     Location: http://www.google.com/
+#     Content-Type: text/html; charset=UTF-8
+#     ...
+#
+#     GET / HTTP/1.1
+#     Host: www.google.com
+#     User-Agent: curl/8.7.1
+#     Accept: */*
+#
+#     HTTP/1.1 200 OK
+#     Date: Thu, 03 Apr 2025 06:20:55 GMT
+#     Expires: -1
+#     Cache-Control: private, max-age=0
+#     Content-Type: text/html; charset=ISO-8859-1
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+curl -sv "$@" 2>&1 >/dev/null |
+	grep -v "^\*" |
+	grep -v "^}" |
+	cut -c3- |
+	grep -v "^\["
