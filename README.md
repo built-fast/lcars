@@ -38,6 +38,7 @@ OPTIONS
       Print the root directory that LCARS is installed to and exit.
 
 COMMANDS
+  app:artisan         Interactive Laravel Artisan command launcher with fuzzy search
   app:console         Opens the Tinker console
   app:eval            Runs the given PHP code in the context of a Laravel application
   cli:aliases         Lists all LCARS aliases

@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+# Usage: lcars app:artisan [command] [arguments...]
+# Summary: Interactive Laravel Artisan command launcher with fuzzy search
+#
+# NAME
+#   lcars app:artisan -- Interactive Laravel Artisan command launcher
+#
+# SYNOPSIS
+#   lcars app:artisan [command] [arguments...]
+#
+# DESCRIPTION
+#   When called without arguments, presents an interactive fuzzy-searchable list
+#   of all available Laravel Artisan commands. Use arrow keys to navigate, type
+#   to filter commands, press '?' to preview command help, and Enter to execute.
+#
+#   When called with arguments, passes them directly to `php artisan`.
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+list() {
+  php artisan list --raw | awk '{
+    desc = ""
+
+    for (i = 2; i <= NF; i++) {
+      desc = desc $i " "
+    }
+
+    printf "%s\t%s\n", $1, desc
+  }'
+}
+
+render() {
+  local commands
+
+  commands="$(list)" || return 1
+
+  sort -k1 <<< "$commands" | while IFS=$'\t' read -r command desc; do
+    printf "%s\t%s\n" "$command" "$desc"
+  done | tableize
+}
+
+tableize() {
+  column -t -s$'\t'
+}
+
+choose() {
+  local rendered fzf_args=()
+
+  # shellcheck disable=SC2054
+  fzf_args+=(--tiebreak=begin,index)
+  fzf_args+=(--preview-window hidden)
+  fzf_args+=(--bind "?:preview(php artisan help --ansi {1})")
+  fzf_args+=(--bind "esc:hide-preview,focus:hide-preview")
+  fzf_args+=(--bind "enter:become(art {1})")
+
+  rendered="$(render)" || return 1
+
+  fzf "${fzf_args[@]}" <<< "$rendered"
+}
+
+if [[ ! -f artisan ]]; then
+  echo "artisan not found, is \`$PWD' a Laravel project?" >&2
+  exit 1
+fi
+
+if [[ $# -gt 0 ]]; then
+  php artisan "$@"
+  exit $?
+fi
+
+choose
