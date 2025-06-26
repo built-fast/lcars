@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+# Usage: lcars app:reset
+# Summary: Fully resets the application database and clears caches.
+#
+# NAME
+#   lcars app:reset -- Fully resets the application database and clears caches.
+#
+# SYNOPSIS
+#   lcars app:reset
+#
+# DESCRIPTION
+#   lcars app:reset fully resets the application database by freshly
+#   migrating the database, clearing queues, seeding the database,
+#   clearing views, caches, and configurations, and truncating the
+#   Laravel log file.
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+if [[ "$(app:environment)" != "local" ]]; then
+  echo "  $(color:on white bg-red) ERROR $(color:off) This command can only be run in the local environment."
+  exit 1
+fi
+
+php artisan migrate:fresh
+
+if grep horizon composer &> /dev/null; then
+  php artisan horizon:clear
+else
+  php artisan queue:flush
+fi
+
+php artisan db:seed
+php artisan view:clear
+php artisan cache:clear
+php artisan config:clear
+
+LOG_PATH="$(app:root)/storage/logs/laravel.log"
+
+if [[ -f "$LOG_PATH" ]]; then
+  echo > "$LOG_PATH"
+  echo
+  echo "  $(color:on white bg-blue) INFO $(color:off) Log truncated"
+fi

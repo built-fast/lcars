@@ -268,7 +268,17 @@ color:codes() {
     magenta)   echo 35 ;;
     cyan)      echo 36 ;;
     white)     echo 37 ;;
-    *) echo "Invalid color name: $name" ;;
+
+    bg-black)   echo 40 ;;
+    bg-red)     echo 41 ;;
+    bg-green)   echo 42 ;;
+    bg-yellow)  echo 43 ;;
+    bg-blue)    echo 44 ;;
+    bg-magenta) echo 45 ;;
+    bg-cyan)    echo 46 ;;
+    bg-white)   echo 47 ;;
+
+    *) echo "Invalid color name: $name" >&2  && return 1 ;;
   esac
 }
 export -f color:codes
@@ -296,7 +306,7 @@ export -f color:codes
 color:on() {
   [[ "${NO_ANSI-}" == "1" ]] && return 0
 
-  local name="$1" code spec
+  local name="$1" code spec bg_spec=""
 
   shift
 
@@ -304,10 +314,13 @@ color:on() {
 
   if [[ "$name" == "normal" ]]; then
     spec="${code}m"
+
+    echo -n -e "\033[${spec}"
+
+    return 0
   fi
 
-  spec=
-
+  spec=""
   for arg in "$@"; do
     case "$arg" in
       --bold)
@@ -319,13 +332,13 @@ color:on() {
       --invert)
         spec="$spec;$(color:codes invert)" ;;
       --bright)
-        code=$((code + 60))
-        spec="$spec;$code"
-        ;;
+        code=$((code + 60)) ;;
+      bg-*)
+        bg_spec="$bg_spec;$(color:codes "$arg")" ;;
     esac
   done
 
-  echo -n -e "\033[${code}${spec}m"
+  echo -n -e "\033[${code}${spec}${bg_spec}m"
 }
 export -f color:on
 
