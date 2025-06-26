@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Usage: lcars app:root
+# Summary: Prints the application root path
+#
+# NAME
+#   lcars app:root -- Prints the application root path
+#
+# SYNOPSIS
+#   lcars app:root
+#
+# DESCRIPTION
+#   lcars app:root prints the root path of the Laravel application.
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+app:root

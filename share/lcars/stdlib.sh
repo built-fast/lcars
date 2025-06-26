@@ -349,3 +349,9 @@ str:color() {
   color:off
 }
 export -f str:color
+
+# Print the application root
+app:root() {
+  php artisan tinker --execute "echo base_path() . PHP_EOL;"
+}
+export -f app:root
