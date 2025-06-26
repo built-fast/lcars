@@ -23,4 +23,4 @@ fi
 
 set -euo pipefail
 
-composer exec -- pint --test --format=txt --verbose "$@"
+composer exec -- pint --test --format=txt --verbose "$@" 2> /dev/null
