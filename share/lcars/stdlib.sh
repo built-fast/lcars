@@ -255,6 +255,18 @@ hash:md5() {
 }
 export -f hash:md5
 
+# Hashes the given file using sha1.
+hash:sha1() {
+  if command -v sha1sum &> /dev/null; then
+    sha1sum | awk '{ print $1 }'
+  elif command -v shasum &> /dev/null; then
+    shasum -a 1 | awk '{ print $1 }'
+  else
+    abort "No sha1sum or shasum found"
+  fi
+}
+export -f hash:sha1
+
 # Generate a random hash.
 hash:random() {
   openssl rand -hex 32

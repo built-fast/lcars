@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Usage: lcars hash:sha1
+# Summary: Hashes a string or file contents using SHA-1
+#
+# NAME
+#   lcars hash:sha1 -- Hashes a string or file contents using SHA-1
+#
+# SYNOPSIS
+#   lcars hash:sha1
+#
+# DESCRIPTION
+#   lcars hash:sha1 hashes a string or file contents using SHA-1.
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+hash:sha1 <<< "${1:-$(cat)}"
