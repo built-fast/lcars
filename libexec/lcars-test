@@ -1,0 +1,115 @@
+#!/usr/bin/env bash
+# Usage: lcars test
+# Summary: Runs Pint, Pest, PHPStan, and ShellCheck tests
+#
+# NAME
+#   lcars test -- Runs Pint, Pest, PHPStan, and ShellCheck tests
+#
+# SYNOPSIS
+#   lcars test
+#
+# DESCRIPTION
+#   lcars test runs Pint, Pest, PHPStan, and ShellCheck tests on the project.
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+FAILED=0
+
+run_pint() {
+  if ! composer:is_installed laravel/pint; then
+    warn "Pint is not installed."
+    return 1
+  fi
+
+  lcars-test:pint "$@" || FAILED=1
+}
+
+run_pest() {
+  if ! composer:is_installed pestphp/pest; then
+    warn "Pest is not installed."
+    return 1
+  fi
+
+  lcars-test:pest "$@" || FAILED=1
+}
+
+run_phpstan() {
+  if ! composer:is_installed phpstan/phpstan; then
+    warn "PHPStan is not installed."
+    return 1
+  fi
+
+  lcars-test:phpstan "$@" || FAILED=1
+}
+
+run_shellcheck() {
+  if ! type shellcheck &>/dev/null; then
+    warn "shellcheck is not installed"
+    return 1
+  fi
+
+  lcars-test:shellcheck || FAILED=1
+}
+
+main() {
+  local cmd="$1"
+
+  case "$cmd" in
+    shellcheck)
+      shift
+      run_shellcheck "$@"
+      ;;
+    pint)
+      shift
+      run_pint "$@"
+      ;;
+    pest)
+      shift
+      run_pest "$@"
+      ;;
+    types|phpstan)
+      shift
+      run_phpstan "$@"
+      ;;
+    all)
+      shift
+      ;;
+    *)
+      warn "Unknown command: $cmd"
+      return 1
+      ;;
+  esac
+
+  echo "  $(color:on white bg-blue) INFO $(color:off) Running tests..."
+  echo
+
+  echo "  $(color:on white bg-blue) INFO $(color:off) Running Pint..."
+  echo
+  run_pint 2> /dev/null
+
+  echo "  $(color:on white bg-blue) INFO $(color:off) Running Pest..."
+  echo
+  run_pest 2> /dev/null
+
+  echo "  $(color:on white bg-blue) INFO $(color:off) Running PHPStan..."
+  echo
+  run_phpstan 2> /dev/null
+
+  echo "  $(color:on white bg-blue) INFO $(color:off) Running Shellcheck..."
+  echo
+  run_shellcheck 2> /dev/null
+
+  return $FAILED
+}
+
+main "${@:-all}"

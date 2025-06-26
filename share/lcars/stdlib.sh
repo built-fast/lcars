@@ -373,3 +373,9 @@ app:environment() {
   php artisan tinker --execute "echo app()->environment() . PHP_EOL;"
 }
 export -f app:environment
+
+# Checks if the given composer package is installed.
+composer:is_installed() {
+  composer show "$@" >/dev/null 2>&1
+}
+export -f composer:is_installed
