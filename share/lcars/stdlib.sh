@@ -355,3 +355,8 @@ app:root() {
   php artisan tinker --execute "echo base_path() . PHP_EOL;"
 }
 export -f app:root
+
+app:environment() {
+  php artisan tinker --execute "echo app()->environment() . PHP_EOL;"
+}
+export -f app:environment

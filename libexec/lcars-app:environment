@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Usage: lcars app:environment
+# Summary: Prints the current application environment
+#
+# NAME
+#   lcars app:environment -- Prints the current application environment
+#
+# SYNOPSIS
+#   lcars app:environment
+#
+# DESCRIPTION
+#   lcars app:environment prints the current application environment
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+app:environment
