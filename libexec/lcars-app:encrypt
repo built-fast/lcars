@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Usage: lcars app:encrypt < file
+#        lcars app:encrypt <<< "string"
+#        lcars app:encrypt
+#        my encrypted message
+#        ^D
+# Summary: Encrypts input data using Laravel's encryption service
+#
+# NAME
+#   lcars app:encrypt -- Encrypts input data using Laravel's encryption service
+#
+# SYNOPSIS
+#   lcars app:encrypt
+#
+# DESCRIPTION
+#   lcars app:encrypt encrypts the input data using Laravel's encryption
+#   service (eg: APP_KEY).
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+php artisan tinker --execute 'echo encrypt(file_get_contents("php://stdin"));'

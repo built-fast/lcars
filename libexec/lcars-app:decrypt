@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Usage: lcars app:decrypt < file
+#        lcars app:decrypt <<< "string"
+#        lcars app:decrypt
+#        my encrypted message
+#        ^D
+# Summary: Decrypts input data using Laravel's encryption service
+#
+# NAME
+#   lcars app:decrypt -- Decrypts input data using Laravel's encryption service
+#
+# SYNOPSIS
+#   lcars app:decrypt
+#
+# DESCRIPTION
+#   lcars app:decrypt decrypts the input data using Laravel's encryption
+#   service (eg: APP_KEY).
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+php artisan tinker --execute 'echo decrypt(file_get_contents("php://stdin"));'
