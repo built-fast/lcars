@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Usage: lcars hash:md5
+# Summary: Hashes a string or file contents using MD5
+#
+# NAME
+#   lcars hash:md5 -- Hashes a string or file contents using MD5
+#
+# SYNOPSIS
+#   lcars hash:md5
+#
+# DESCRIPTION
+#   lcars hash:md5 hashes a string or file contents using MD5.
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+hash:md5 <<< "${1:-$(cat)}"
