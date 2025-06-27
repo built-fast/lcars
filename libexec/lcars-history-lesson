@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Usage: lcars history-lesson
+# Summary: Prints today's random facts
+#
+# NAME
+#   lcars history-lesson -- Prints today's random facts
+#
+# SYNOPSIS
+#   lcars history-lesson
+#
+# DESCRIPTION
+#   lcars history-lesson prints a random fact for the current day.
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+echo "Today's Random Facts"
+echo "===================="
+echo
+grep -h "^$(date '+%m/%d')" "$_LCARS_ROOT/share/lcars/calendars/calendar."* |
+  cut -f2 | awk '{ print "- " $0 }'
