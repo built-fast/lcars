@@ -40,6 +40,8 @@ OPTIONS
 COMMANDS
   app:artisan         Interactive Laravel Artisan command launcher with fuzzy search
   app:console         Opens the Tinker console
+  app:decrypt         Decrypts input data using Laravel's encryption service
+  app:encrypt         Encrypts input data using Laravel's encryption service
   app:environment     Prints the current application environment
   app:eval            Runs the given PHP code in the context of a Laravel application
   app:reset           Fully resets the application database and clears caches.
@@ -56,6 +58,7 @@ COMMANDS
   hash:random         Generates a random hash using OpenSSL
   hash:sha1           Hashes a string or file contents using SHA-1
   hash:sha256         Hashes a string or file contents using SHA-256
+  history-lesson      Prints today's random facts
   inspect:headers     Makes a cURL request and prints the headers
   inspect:php:ext     Checks if a PHP extension is installed
   inspect:ssl:expiry  Prints SSL expiration dates for domains
