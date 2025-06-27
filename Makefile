@@ -17,6 +17,13 @@ test: test-shellcheck ## run full test suite
 test-shellcheck: ## run shellcheck
 	./bin/lcars test:shellcheck
 
+.PHONY: man
+man: share/man/man1/lcars.1 ## build man page
+
+share/man/man1/lcars.1: doc/man/lcars.1.md
+	@mkdir -p share/man/man1
+	pandoc $< -s -t man -o $@
+
 .PHONY: install
 install:
 	for dir in $(INSTALL_DIRS); do mkdir -p $(DESTDIR)$(PREFIX)/$$dir; done
