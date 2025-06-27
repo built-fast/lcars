@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
-# Usage: lcars history-lesson
-# Summary: Prints today's random facts
+# Usage: lcars history-lesson [MM/DD]
+# Summary: Prints random facts for a date
 #
 # NAME
-#   lcars history-lesson -- Prints today's random facts
+#   lcars history-lesson -- Prints random facts for a date
 #
 # SYNOPSIS
-#   lcars history-lesson
+#   lcars history-lesson [MM/DD]
 #
 # DESCRIPTION
-#   lcars history-lesson prints a random fact for the current day.
+#   lcars history-lesson prints random facts for the specified date in MM/DD format.
+#   If no date is provided, defaults to today's date.
 
 if [[ "$LCARS_DEBUG" ]]; then
   export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
@@ -23,8 +24,22 @@ fi
 
 set -euo pipefail
 
-echo "Today's Random Facts"
+if [[ $# -eq 1 ]]; then
+  date_arg="$1"
+  if [[ ! "$date_arg" =~ ^[0-9]{1,2}/[0-9]{1,2}$ ]]; then
+    echo "Error: Date must be in MM/DD format" >&2
+    exit 1
+  fi
+  month=$(printf "%02d" "${date_arg%/*}")
+  day=$(printf "%02d" "${date_arg#*/}")
+  search_date="$month/$day"
+  echo "Random Facts for $search_date"
+else
+  search_date="$(date '+%m/%d')"
+  echo "Today's Random Facts"
+fi
+
 echo "===================="
 echo
-grep -h "^$(date '+%m/%d')" "$_LCARS_ROOT/share/lcars/calendars/calendar."* |
+grep -h "^$search_date" "$_LCARS_ROOT/share/lcars/calendars/calendar."* |
   cut -f2 | awk '{ print "- " $0 }'
