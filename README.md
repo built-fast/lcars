@@ -13,6 +13,59 @@ Key features:
 - **Development Utilities**: Hash generation, HTTP header and SSL inspection,
   clipboard operations, and more
 
+## Installation
+
+### Install globally via Homebrew on macOS
+
+On macOS, `lcars` can be installed via Homebrew with:
+
+```
+brew install built-fast/devtools/lcars
+```
+
+### Install globally via make
+
+macOS and most Linux distributions add `/usr/local/bin` to `$PATH` and
+`/usr/local/share/man` to `$MANPATH`. If you are the only user on the machine,
+or if you want to make `lcars` available for all users, you can install
+it globally as follows:
+
+```
+git clone https://github.com/built-fast/lcars
+cd lcars
+sudo make install PREFIX=/usr/local
+```
+
+### Install locally via make
+
+If you don't want a global installation, another common pattern is to install
+to `~/.local`. This is enabled on Ubuntu by default.
+
+```
+git clone https://github.com/built-fast/lcars
+cd lcars
+make install PREFIX=~/.local
+```
+
+To test, verify that `lcars help` works and that `man lcars` prints the man
+page.
+
+If you see `lcars: command not found`, you need to update your `$PATH`.
+If you are using Bash, add the following to `~/.bash_profile`, or if you are
+using ZSH, add it to `~/.zshenv`:
+
+```
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+If `man lcars` reports `No manual entry for lcars`, you need to
+update your `$MANPATH`. This can be done by adding the following to
+`~/.manpath` (note, change USER to your username):
+
+```
+MANDATORY_MANPATH /home/USER/.manpath
+```
+
 ## Usage
 
 ```
