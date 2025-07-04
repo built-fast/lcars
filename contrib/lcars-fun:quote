@@ -1,0 +1,353 @@
+#!/usr/bin/env bash
+# Usage: lcars fun:quote [ds9|inspiring|jack-handy]
+# Summary: Satisfaction is not guaranteed
+#
+# NAME
+#   lcars fun:quote -- Random quotes for no reason
+#
+# SYNOPSIS
+#   lcars fun:quote
+#
+# DESCRIPTION
+#   lcars fun:quote is a simple script that returns a random quote.
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+# Provide lcars completions
+list() {
+  echo "ds9"
+  echo "inspiring"
+  echo "jack-handy"
+}
+
+quotes_inspiring() {
+cat <<'EOF'
+[
+  "Act only according to that maxim whereby you can, at the same time, will that it should become a universal law. - Immanuel Kant",
+  "An unexamined life is not worth living. - Socrates",
+  "Be present above all else. - Naval Ravikant",
+  "Do what you can, with what you have, where you are. - Theodore Roosevelt",
+  "Happiness is not something readymade. It comes from your own actions. - Dalai Lama",
+  "He who is contented is rich. - Laozi",
+  "I begin to speak only when I am certain what I will say is not better left unsaid. - Cato the Younger",
+  "I have not failed. I've just found 10,000 ways that won't work. - Thomas Edison",
+  "If you do not have a consistent goal in life, you can not live it in a consistent way. - Marcus Aurelius",
+  "It is never too late to be what you might have been. - George Eliot",
+  "It is not the man who has too little, but the man who craves more, that is poor. - Seneca",
+  "It is quality rather than quantity that matters. - Lucius Annaeus Seneca",
+  "Knowing is not enough; we must apply. Being willing is not enough; we must do. - Leonardo da Vinci",
+  "Let all your things have their places; let each part of your business have its time. - Benjamin Franklin",
+  "Live as if you were to die tomorrow. Learn as if you were to live forever. - Mahatma Gandhi",
+  "No surplus words or unnecessary actions. - Marcus Aurelius",
+  "Nothing worth having comes easy. - Theodore Roosevelt",
+  "Order your soul. Reduce your wants. - Augustine",
+  "People find pleasure in different ways. I find it in keeping my mind clear. - Marcus Aurelius",
+  "Simplicity is an acquired taste. - Katharine Gerould",
+  "Simplicity is the consequence of refined emotions. - Jean D'Alembert",
+  "Simplicity is the essence of happiness. - Cedric Bledsoe",
+  "Simplicity is the ultimate sophistication. - Leonardo da Vinci",
+  "Smile, breathe, and go slowly. - Thich Nhat Hanh",
+  "The only way to do great work is to love what you do. - Steve Jobs",
+  "The whole future lies in uncertainty: live immediately. - Seneca",
+  "Very little is needed to make a happy life. - Marcus Aurelius",
+  "Waste no more time arguing what a good man should be, be one. - Marcus Aurelius",
+  "Well begun is half done. - Aristotle",
+  "When there is no desire, all things are at peace. - Laozi",
+  "Walk as if you are kissing the Earth with your feet. - Thich Nhat Hanh",
+  "Because you are alive, everything is possible. - Thich Nhat Hanh",
+  "Breathing in, I calm body and mind. Breathing out, I smile. - Thich Nhat Hanh",
+  "Life is available only in the present moment. - Thich Nhat Hanh",
+  "The best way to take care of the future is to take care of the present moment. - Thich Nhat Hanh",
+  "Nothing in life is to be feared, it is only to be understood. Now is the time to understand more, so that we may fear less. - Marie Curie",
+  "The biggest battle is the war against ignorance. - Mustafa Kemal Atatürk",
+  "Always remember that you are absolutely unique. Just like everyone else. - Margaret Mead",
+  "You must be the change you wish to see in the world. - Mahatma Gandhi",
+  "We must ship. - Taylor Otwell"
+]
+EOF
+}
+
+quotes_ds9() {
+cat <<'EOF'
+[
+  "Once you have their money, you never give it back. - Rule of Acquisition 1",
+  "Never spend more for an acquisition than you have to. - Rule of Acquisition 3",
+  "Never allow family to stand in the way of opportunity. - Rule of Acquisition 6",
+  "Keep your ears open. - Rule of Acquisition 7",
+  "Small print leads to large risk. - Rule of Acquisition 8",
+  "Opportunity plus instinct equals profit. - Rule of Acquisition 9",
+  "Greed is eternal. - Rule of Acquisition 10",
+  "Anything worth doing is worth doing for money. - Rule of Acquisition 13",
+  "A deal is a deal. - Rule of Acquisition 16",
+  "A contract is a contract is a contract, but only between Ferengi. - Rule of Acquisition 17",
+  "A Ferengi without profit is no Ferengi at all. - Rule of Acquisition 18",
+  "Satisfaction is not guaranteed. - Rule of Acquisition 19",
+  "Never place friendship above profit. - Rule of Acquisition 21",
+  "A wise man can hear profit in the wind. - Rule of Acquisition 22",
+  "Nothing is more important than your health... except for your money. - Rule of Acquisition 23",
+  "There is nothing more dangerous than an honest businessman. - Rule of Acquisition 27",
+  "Never make fun of a Ferengi's mother. - Rule of Acquisition 31",
+  "It never hurts to suck up to the boss. - Rule of Acquisition 33",
+  "War is good for business. - Rule of Acquisition 34",
+  "Peace is good for business. - Rule of Acquisition 35",
+  "She can touch your lobes, but never your latinum. - Rule of Acquisition 40",
+  "Profit is its own reward. - Rule of Acquisition 41",
+  "Never confuse wisdom with luck. - Rule of Acquisition 44",
+  "Expand or die. - Rule of Acquisition 45",
+  "Don't trust a man wearing a better suit than your own. - Rule of Acquisition 47",
+  "The bigger the smile, the sharper the knife. - Rule of Acquisition 48",
+  "Never ask when you can take. - Rule of Acquisition 52",
+  "Good customers are as rare as latinum. Treasure them. - Rule of Acquisition 57",
+  "There is no substitute for success. - Rule of Acquisition 58",
+  "Free advice is seldom cheap. - Rule of Acquisition 59",
+  "Keep your lies consistent. - Rule of Acquisition 60",
+  "The riskier the road, the greater the profit. - Rule of Acquisition 62",
+  "Work is the best therapy - at least for your employees. - Rule of Acquisition 63",
+  "Win or lose, there's always Hupyrian beetle snuff. - Rule of Acquisition 65",
+  "Knowledge equals profit. - Rule of Acquisition 74",
+  "Home is where the heart is, but the stars are made of latinum. - Rule of Acquisition 75",
+  "Every once in a while, declare peace. It confuses the hell out of your enemies!. - Rule of Acquisition 76",
+  "Beware of the Vulcan greed for knowledge. - Rule of Acquisition 79",
+  "The flimsier the product, the higher the price. - Rule of Acquisition 82",
+  "Never let the competition know what you're thinking. - Rule of Acquisition 85",
+  "Ask not what your profits can do for you, but what you can do for your profits. - Rule of Acquisition 89",
+  "Females and finance don't mix. - Rule of Acquisition 94",
+  "Expand or die. - Rule of Acquisition 95",
+  "Enough... is never enough. - Rule of Acquisition 97",
+  "Every man has his price. - Rule of Acquisition 98",
+  "Trust is the biggest liability of all. - Rule of Acquisition 99",
+  "Nature decays, but latinum lasts forever. - Rule of Acquisition 102",
+  "Sleep can interfere with· (remainder of rule unknown). - Rule of Acquisition 103",
+  "Faith moves mountains... of inventory. - Rule of Acquisition 104",
+  "There is no honour in poverty. - Rule of Acquisition 106",
+  "Dignity and an empty sack is worth a sack. - Rule of Acquisition 109",
+  "Treat people in your debt like family. Exploit them. - Rule of Acquisition 111",
+  "Never have sex with the bosses sister. - Rule of Acquisition 112",
+  "Always have sex with the boss. - Rule of Acquisition 113",
+  "Everything is for sale, even friendship. - Rule of Acquisition 121",
+  "Even a blind man can recognize the glow of latinum. - Rule of Acquisition 123",
+  "You can't make a deal if you're dead. - Rule of Acquisition 125",
+  "Wives serve, brothers inherit. - Rule of Acquisition 139",
+  "Only fools pay retail. - Rule of Acquisition 141",
+  "There's nothing wrong with charity... as long as it winds up in your pocket. - Rule of Acquisition 144",
+  "Even in the worst of times, someone turns a profit. - Rule of Acquisition 162",
+  "Whisper your way to success. - Rule of Acquisition 168",
+  "Know your enemies... but do business with them always. - Rule of Acquisition 177",
+  "Not even dishonesty can tarnish the shine of profit. - Rule of Acquisition 181",
+  "Let others keep their reputation. You keep their latinum. - Rule of Acquisition 189",
+  "Hear all, trust nothing. - Rule of Acquisition 190",
+  "Never cheat a Klingon... unless you can get away with it. - Rule of Acquisition 192",
+  "It's always good business to know about your customers before they walk in your door. - Rule of Acquisition 194",
+  "The justification for profit is profit. - Rule of Acquisition 202",
+  "New customers are like razor-toothed Gree worms. They can be succulent, but sometimes they bite back. - Rule of Acquisition 203",
+  "Sometimes, the only thing more dangerous than a question is an answer. - Rule of Acquisition 208",
+  "Employees are the rungs on the ladder of success. Don't hesitate to step on them. - Rule of Acquisition 211",
+  "Never begin a business negotiation on an empty stomach. - Rule of Acquisition 214",
+  "You can't free a fish from water. - Rule of Acquisition 217",
+  "Always know what you're buying. - Rule of Acquisition 218",
+  "Beware the man who doesn't make time for oo-mox. - Rule of Acquisition 223",
+  "Latinum lasts longer than lust. - Rule of Acquisition 229",
+  "You can't buy fate. - Rule of Acquisition 236",
+  "Never be afraid to mislabel a product. - Rule of Acquisition 239",
+  "More is good. All is better. - Rule of Acquisition 242",
+  "A wife is a luxury... a smart accountant a necessity. - Rule of Acquisition 255",
+  "A wealthy man can afford anything except a conscience. - Rule of Acquisition 261",
+  "Never allow doubt to tarnish your lust for latinum. - Rule of Acquisition 263",
+  "When in doubt, lie. - Rule of Acquisition 266",
+  "Deep down, everyone's a Ferengi. - Rule of Acquisition 284",
+  "No good deed ever goes unpunished. - Rule of Acquisition 285"
+]
+EOF
+}
+
+quotes_jack_handy() {
+cat <<'EOF'
+[
+  "To me, it's always a good idea to always carry two sacks of something when you walk around. That way, if anybody says, \"Hey, can you give me a hand?,\" you can say, \"Sorry, got these sacks.\" - Deep Thoughts by Jack Handy",
+  "If I ever get real rich, I hope I'm not real mean to poor people, like I am now. - Deep Thoughts by Jack Handy",
+  "Whenever you read a good book, it's like the author is right there, in the room, talking to you, which is why I don't like to read good books. - Deep Thoughts by Jack Handy",
+  "You know one thing that will really make a woman mad? Just run up and kick her in the butt. (P.S. This also works with men.) - Deep Thoughts by Jack Handy",
+  "You know something that would really make me applaud? A guy gets stuck in quicksand, then sinks, then suddenly comes shooting out, riding on water skis! How do they do that?! - Deep Thoughts by Jack Handy",
+  "If your kid makes one of those little homemade guitars out of a cigar box and rubber bands, don't let him just play it once or twice and then throw it away. Make him practice on it, every day, for about three hours a day. Later, he'll thank you. - Deep Thoughts by Jack Handy",
+  "Sometimes I think you have to march right in and demand your rights, even if you don't know what your rights are, or who the person is you're talking to. Then, on the way out, slam the door. - Deep Thoughts by Jack Handy",
+  "Anytime I see something screech across a room and latch onto someone's neck, and the guy screams and tries to get it off, I have to laugh, because what IS that thing?! - Deep Thoughts by Jack Handy",
+  "What is it that makes a complete stranger dive into an icy river to save a solid-gold baby? Maybe we'll never know. - Deep Thoughts by Jack Handy",
+  "If you're an archaeologist, I bet it's real embarrassing to put together a skull from a bunch of ancient bone fragments, but then it turns out it's not a skull but just an old dried-out potato. - Deep Thoughts by Jack Handy",
+  "To me, clowns aren't funny. In fact, they're kinda scary. I've wondered where this started, and I think it goes back to the time I went to the circus and a clown killed my dad. - Deep Thoughts by Jack Handy",
+  "Whenever I need to \"get away,\" I just get away in my mind. I go to my imaginary spot, where the beach is perfect and the water is perfect and the weather is perfect. The only bad thing there are the flies. They're terrible! - Deep Thoughts by Jack Handy",
+  "Whenever someone asks me to define love, I usually think for a minute, then I spin around and pin the guy's arm behind his back. NOW who's asking the questions? - Deep Thoughts by Jack Handy",
+  "There are many stages to a man's life. In the first stage, he is young and eager, like a beaver. In the second stage, he wants to build things, like dams, and maybe chew down some trees. In the third stage, he feels trapped, and then \"skinned.\" I'm not sure what the fourth stage is. - Deep Thoughts by Jack Handy",
+  "When I was a child, there were times when we had to entertain ourselves. And usually the best way to do that was to turn on the TV. - Deep Thoughts by Jack Handy",
+  "I scrambled to the top of the precipice where Nick was waiting. \"That was fun,\" I said. \"You bet it was,\" said Nick. \"Let's climb higher.\" \"No,\" I said. \"I think we should be heading back now.\" \"We have time,\" Nick insisted. I said we didn't, and Nick said we did. We argued back and forth like that for about 20 minutes, then finally decided to head back. I didn't say it was an interesting story. - Deep Thoughts by Jack Handy",
+  "A man doesn't automatically get my respect. He has to get down in the dirt and beg for it. - Deep Thoughts by Jack Handy",
+  "I'd like to see a nature film where an eagle swoops down and pulls a fish out of a lake, and then maybe he's flying along, low to the ground, and the fish pulls a worm out of the ground. Now THAT'S a documentary! - Deep Thoughts by Jack Handy",
+  "The old pool shooter had won many a game in his life. But now it was time to hang up the cue. When he did, all the other cues came crashing to the floor. \"Sorry,\" he said with a smile. - Deep Thoughts by Jack Handy",
+  "I don't pretend to have all the answers. I don't pretend to even know what the questions are. Hey, where am I? - Deep Thoughts by Jack Handy",
+  "One thing about my Aunt Nadie: She was gruff on the outside, but if you ever needed something, like a spanking or a scolding, she'd give it to you. - Deep Thoughts by Jack Handy",
+  "Instead of putting a quarter under a kid's pillow, how about a pinecone? That way, he learns that \"wishing\" isn't going to save our national forests. - Deep Thoughts by Jack Handy",
+  "You know what would make a good story? Something about a clown who makes people happy, but inside he's real sad. Also, he has severe diarrhea. - Deep Thoughts by Jack Handy",
+  "The old-timers around here still shake their heads and chuckle about that city slicker who came through, trying to peddle \"hair restorer.\" He took everyone's money in a poker game, so when he tried to sell the bottles of hair restorer, nobody had any money left to buy it! - Deep Thoughts by Jack Handy",
+  "When this girl at the museum asked me who I liked better, Monet or Manet, I said, \"I like mayonnaise.\" She just stared at me, so I said it again, louder. Then she left. I guess she went to try to find some mayonnaise for me. - Deep Thoughts by Jack Handy",
+  "Despair is like a cable that is buried just under the surface of the ground. You pull it up and pull it up, but that cable just keeps right on going, clear across a field, until you come to a bunch of guys who are burying the cable. Then just walk up to them and go, \"Hey, have you seen Fred?\" And they'll say, \"Fred who?\" And you say, \"Fred of snakes?\" Then cover your ears, because big laughs are coming. - Deep Thoughts by Jack Handy",
+  "Just as bees will swarm about to protect their nest, so will I \"swarm about\" to protect my nest of chocolate eggs. - Deep Thoughts by Jack Handy",
+  "I bet one legend that keeps recurring throughout history, in every culture, is the story of Popeye. - Deep Thoughts by Jack Handy",
+  "Isn't it funny how we'll look out the window at the moon, and then we notice it's not the moon but a streetlight? Also what's funny is how we do this every night. - Deep Thoughts by Jack Handy",
+  "There should be a detective show called \"Johnny Monkey,\" because every week you could have a guy say \"I ain't gonna get caught by no MONKEY,\" but then he would, and I don't think I'd ever get tired of that. - Deep Thoughts by Jack Handy",
+  "I bet a fun thing would be to go way back in time to where there was going to be an eclipse and tell the cave men, \"If I have come to destroy you, may the sun be blotted out from the sky.\" Just then the eclipse would start, and they'd probably try to kill you or something, but then you could explain about the rotation of the moon and all, and everyone would get a good laugh. - Deep Thoughts by Jack Handy",
+  "If you're traveling in a time machine, and you're eating corn on the cob, I don't think it's going to affect things one way or the other. But here's the point I'm trying to make: Corn on the cob is good, isn't it? - Deep Thoughts by Jack Handy",
+  "Do you know what happens when you slice a golf ball in half? Someone gets mad at you. I found this out the hard way. - Deep Thoughts by Jack Handy",
+  "Many people never stop to realize that a tree is a living thing, not that different from a tall, leafy dog that has roots and is very quiet. - Deep Thoughts by Jack Handy",
+  "If you saw two guys named Hambone and Flippy, which one would you think liked dolphins the most? I'd say Flippy, wouldn't you? You'd be wrong though. It's Hambone. - Deep Thoughts by Jack Handy",
+  "The wise man can pick up a grain of sand and envision a whole universe. But the stupid man will just lie down on some seaweed and roll around until he's completely draped in it. Then he'll stand up and go, \"Hey, I'm Vine Man.\" - Deep Thoughts by Jack Handy",
+  "Maybe in order to understand mankind, we have to look at the word itself. Mankind. Basically, it's made up of two separate words---\"mank\" and \"ind\". What do these words mean? It's a mystery, and that's why so is mankind. - Deep Thoughts by Jack Handy",
+  "Probably the earliest flyswatters were nothing more than some sort of striking surface attached to the end of a long stick. - Deep Thoughts by Jack Handy",
+  "As the evening sun faded from a salmon color to a sort of flint gray, I thought back to the salmon I caught that morning, and how gray he was, and how I named him Flint. - Deep Thoughts by Jack Handy",
+  "Like jewels in a crown, the precious stones glittered in the queen's round metal hat. - Deep Thoughts by Jack Handy",
+  "As the light changed from red to green to yellow and back to red again, I sat there thinking about life. Was it nothing more than a bunch of honking and yelling? Sometimes it seemed that way. - Deep Thoughts by Jack Handy",
+  "Frank knew that no man had ever crossed the desert on foot and lived to tell about it. So, he decided to get back in his car and keep driving. - Deep Thoughts by Jack Handy",
+  "I'd rather be rich than stupid. - Deep Thoughts by Jack Handy",
+  "The crows seemed to be calling his name, thought Caw. - Deep Thoughts by Jack Handy",
+  "I wish I would have a real tragic love affair and get so bummed out that I'd just quit my job and become a bum for a few years, because I was thinking about doing that anyway. - Deep Thoughts by Jack Handy",
+  "It makes me mad when I go to all the trouble of having Marta cook up about a hundred drumsticks, then the guy at the Marineland says, \"You can't throw chicken to the dolphins. They eat fish.\" Sure they eat fish, if that's all you give them. Man, wise up. - Deep Thoughts by Jack Handy",
+  "One thing kids like is to be tricked. For instance, I was going to take my little nephew to Disneyland, but instead I drove him to an old burned-out warehouse. \"Oh, no,\" I said, \"Disneyland burned down.\" He cried and cried, but I think that deep down, he thought it was a pretty good joke. I started to drive over to the real Disneyland, but it was getting pretty late. - Deep Thoughts by Jack Handy",
+  "If doctors ever tell you that you've \"flipped out,\" don't believe them, and just keep on doing what you were doing, because something tells me \"the Man\" is behind this. - Deep Thoughts by Jack Handy",
+  "To me, boxing is like a ballet, except there's no music, no choreography, and the dancers hit each other. - Deep Thoughts by Jack Handy",
+  "If I was being executed by injection, I'd clean up my cell real neat. Then, when they came to get me, I'd say, \"Injection? I thought you said 'inspection'.\" They'd probably feel real bad, and maybe I could get out of it. - Deep Thoughts by Jack Handy",
+  "Higher beings from outer space may not want to tell us the secrets of life, because we're not ready. But maybe they'll change their tune after a little torture. - Deep Thoughts by Jack Handy",
+  "As I bit into the nectarine, it had a crisp juiciness about it that was very pleasurable---until I realized it wasn't a nectarine at all, but A HUMAN HEAD!! - Deep Thoughts by Jack Handy",
+  "Sometimes I think the so-called experts actually ARE experts. - Deep Thoughts by Jack Handy",
+  "If you're a young Mafia gangster out on your first date, I bet it's really embarrassing if someone tries to kill you. - Deep Thoughts by Jack Handy",
+  "I wish my name was Todd, because then I could say, \"Yes, my name's Todd. Todd Blankenship.\" Oh, also I wish my last name was Blankenship. - Deep Thoughts by Jack Handy",
+  "A funny thing is if you're out hiking and your friend gets bit by a poisonous snake, tell him you're going for help, then go about ten feet and pretend YOU got bit by a snake. Then start an argument about who's going to get help. A lot of guys will start crying. That's why it makes you feel good when you tell them it was just a joke. - Deep Thoughts by Jack Handy",
+  "If you're a blacksmith, probably the proudest day of your life is when you get your first anvil. How innocent you are, little blacksmith. - Deep Thoughts by Jack Handy",
+  "If trees could scream, would we be so cavalier about cutting them down? We might, if they screamed all the time, for no good reason. - Deep Thoughts by Jack Handy",
+  "If you're robbing a bank, and your pants suddenly fall down, I think it's okay to laugh, and to let the hostages laugh too, because come on, life is funny. - Deep Thoughts by Jack Handy",
+  "When I found the skull in the woods, the first thing I did was call the police. But then I got curious about it. I picked it up, and started wondering who this person was, and why he had deer horns. - Deep Thoughts by Jack Handy",
+  "I wish I had a dollar for every time I spent a dollar, because then, yahoo!, I'd have all my money back. - Deep Thoughts by Jack Handy",
+  "When you die, if you get a choice between going to regular heaven or pie heaven, choose pie heaven. It might be a trick, but if it's not, ummmm, boy. - Deep Thoughts by Jack Handy",
+  "The tired and thirsty prospector threw himself down at the edge of the watering hole and started to drink. But then he looked around and saw skulls and bones everywhere. \"Uh-oh,\" he thought. \"This watering hole is reserved for skeletons.\" - Deep Thoughts by Jack Handy",
+  "If the Vikings were around today, they would probably be amazed at how much glow-in-the-dark stuff we have, and how we take so much of it for granted. - Deep Thoughts by Jack Handy",
+  "If you want to sue somebody, just get a little plastic skeleton and lay it in their yard. Then tell them their ants ate your baby. - Deep Thoughts by Jack Handy",
+  "I think a good novel would be where a bunch of men on a ship are looking for a whale. They look and look, but you know what? They never find him. And you know why they never find him? It doesn't say. The book leaves it up to you, the reader, to decide. Then, at the very end, there's a page you can lick and it tastes like Kool-Aid. - Deep Thoughts by Jack Handy",
+  "I remember how the other kids used to say that old Mister Swenson was the meanest man in town. But I said I thought he was nice, that he just didn't know how to show it. The meanest man in town, I said, was the mean old guy who lived in the big white house. \"THAT'S MISTER SWENSON,\" they said. Oh, my mistake. - Deep Thoughts by Jack Handy",
+  "If you're ever stuck in some thick undergrowth in your underwear, don't stop and start thinking of what other words have \"under\" in them, because that's probably the first sign of jungle madness. - Deep Thoughts by Jack Handy",
+  "Love is not something that you can put chains on and throw into a lake. That's called Houdini. Love is liking someone a lot. - Deep Thoughts by Jack Handy",
+  "We used to laugh at Grandpa when he'd head off to go fishing. But we wouldn't be laughing that evening, when he'd come back with some whore he picked up in town. - Deep Thoughts by Jack Handy",
+  "Of all the warning sounds that animals make, I think the one that's the least effective on me is a kind of clicking noise. - Deep Thoughts by Jack Handy",
+  "I wish I lived back in the Old West days, because I'd save up my money for about twenty years so I could buy a solid-gold pick. Then I'd go out west and start digging for gold. When someone came up and asked what I was doing, I'd say, \"Looking for gold, ya durn fool.\" He'd say, \"Your pick is gold.\" And I'd say, \"well, that was easy.\" Good joke, huh? - Deep Thoughts by Jack Handy",
+  "We tend to scoff at the beliefs of the ancients. But we can't scoff at them personally, to their faces, and this is what annoys me. - Deep Thoughts by Jack Handy",
+  "The big, huge meteor headed toward the Earth. Could nothing stop it? Maybe Bob could. He was suddenly on top of the meteor---through some kind of space warp or something. \"Go, Bob, go!\" yelled one of the generals. \"Give me that!\" said the big-guy general as he took the microphone away. \"Listen, Bob,\" he said. \"You've got to steer that meteor away from Earth.\" \"Yes, but how?\" thought Bob. Then he got an idea. Right next to him there was a steering wheel sticking out of the meteor. - Deep Thoughts by Jack Handy",
+  "You can kidnap me and force me to be your watchdog if you want to. But I'm telling you, I will bark at any sound I hear and it will drive you crazy. - Deep Thoughts by Jack Handy",
+  "I'm telling you, just attach a big parachute TO THE PLANE ITSELF! Is anyone listening to me?! - Deep Thoughts by Jack Handy",
+  "I guess of all my uncles, I liked Uncle Cave Man the best. We called him Uncle Cave Man because he lived in a cave and because sometimes he'd eat one of us. Later on we found out he was a bear. - Deep Thoughts by Jack Handy",
+  "Sometimes I wonder if I'm patriotic enough. Yes, I want to kill people, but on both sides. - Deep Thoughts by Jack Handy",
+  "It makes me mad when people say I turned and ran like a scared rabbit. Maybe it was like an angry rabbit, who was going to fight in another fight, away from the first fight. - Deep Thoughts by Jack Handy",
+  "I remember we were all horrified to see Grandpa up on the roof with his Superman cape on. \"Get down!\" yelled Uncle Lou. \"Don't move!\" screamed Grandma. But Grandpa wouldn't listen. He walked to the edge of the roof and stuck out his arms, like he was going to fly. I forget what happened after that. - Deep Thoughts by Jack Handy",
+  "I think in one of my previous lives I was a mighty king, because I like people to do what I say. - Deep Thoughts by Jack Handy",
+  "It's funny that pirates were always going around searching for treasure, and they never realized that the real treasure was the fond memories they were creating. - Deep Thoughts by Jack Handy",
+  "If aliens from outer space ever come and we show them our civilization and they make fun of it, we should say we were just kidding, that this isn't really our civilization, but a gag we hoped they would like. Then we tell them to come back in twenty years to see our REAL civilization. After that, we start a crash program of coming up with an impressive new civilization. Either that, or just shoot down the aliens as they're waving good-bye. - Deep Thoughts by Jack Handy",
+  "I'd like to see a nude opera, because when they hit those high notes I bet you can really see it in those genitals. - Deep Thoughts by Jack Handy",
+  "If the captain invited me to his party, after he had whipped me earlier in the day, up on deck, I guess I'd go, but I'd try to find some excuse to leave early. - Deep Thoughts by Jack Handy",
+  "I think my favorite monster movie is \"Gone With the Wind\", because it has that ear monster and that big-dress monster. - Deep Thoughts by Jack Handy",
+  "Sometimes the beauty of the world is so overwhelming, I just want to throw back my head and gargle. Just gargle and gargle, and I don't care who hears me, because I am beautiful. - Deep Thoughts by Jack Handy",
+  "If you go to a costume party at your boss's house, wouldn't you think a good costume would be to dress up like the boss's wife? Trust me, it's not. - Deep Thoughts by Jack Handy",
+  "It's not good to let any kid near a container that has a skull and crossbones on it, because there might be a skeleton costume inside and the kid could put it on and really scare you. - Deep Thoughts by Jack Handy",
+  "I remember how, in college, I got that part-time job as a circus clown, and how the children would laugh and laugh at me. I vowed, then and there, that I would get revenge. - Deep Thoughts by Jack Handy",
+  "It takes a big man to cry, but it takes a bigger man to laugh at that man. - Deep Thoughts by Jack Handy",
+  "If you ever drop your keys into a river of molten lava, let 'em go, because, man, they're gone. - Deep Thoughts by Jack Handy",
+  "I can't stand cheap people. It makes me real mad when someone says something like \"Hey, when are you going to pay me that hundred dollars you owe me?\" or \"Do you have that fifty dollars you borrowed?\" Man, quit being so cheap! - Deep Thoughts by Jack Handy",
+  "If you're in a war, instead of throwing a hand grenade at some guys, throw one of those little baby-type pumpkins. Maybe it'll make everyone think of how crazy war is, and while they're thinking, you can throw a real grenade. - Deep Thoughts by Jack Handy",
+  "If I was a cowboy in a lynch mob, I think I'd try to stay near the back. That way, if somebody shamed us into disbanding, I could sort of slip off to the side and pretend I was window-shopping or something. - Deep Thoughts by Jack Handy",
+  "Something tells me that the first mousetrap wasn't designed to catch mice at all, but to protect little cheese \"gems\" from burglars. - Deep Thoughts by Jack Handy",
+  "Sometimes I think the world has gone completely mad. And then I think, \"Aw, who cares?\" And then I think, \"Hey, what's for supper?\" - Deep Thoughts by Jack Handy",
+  "If you define cowardice as running away at the first sign of danger, screaming and tripping and begging for mercy, then yes, Mister Brave Man, I guess I am a coward. - Deep Thoughts by Jack Handy",
+  "Many people do not realize that the snowshoe can be used for a great many things besides walking on snow. For instance, it can be used to carry pancakes from the stove to the breakfast table. Also, it can be used to carry uneaten pancakes from the table to the garbage. Finally, it can be used as a kind of stainer, where you force pancakes through the strings to see if a piece of gold got in a pancake somehow. - Deep Thoughts by Jack Handy",
+  "One thing a computer can do that most humans can't is be sealed up in a cardboard box and sit in a warehouse. - Deep Thoughts by Jack Handy",
+  "When Rick told me he was having trouble with his wife, I had to laugh. Not because of what he said, but because of a joke I thought of. I told him the joke, but he didn't laugh very much. Some friend HE is. - Deep Thoughts by Jack Handy",
+  "If you want to be the popular one at a party, here's a good thing to do: Go up to some people who are talking and laughing and say, \"Well, technically that's illegal.\" It might fit in with what somebody just said. And even if it doesn't, so what, I hate this stupid party. - Deep Thoughts by Jack Handy",
+  "I guess one of the funniest memories of my grandfather was the time I was at his house and that tied-up man with the gag in his mouth came hopping out of the closet and started yelling that HE was really my grandfather and the other guy was an imposter and to run for help. Who was that guy?! Oh well, never saw HIM again. - Deep Thoughts by Jack Handy",
+  "Once when I was in Hawaii, on the island of Kauai, I met a mysterious old stranger. He said he was about to die and wanted to tell someone about the treasure. I said, \"Okay, as long as it's not a long story. Some of us have a plane to catch, you know.\" He started telling his story, about the treasure and his life and all, and I thought: \"This story isn't too long.\" But then, he kept going, and I started thinking, \"Uh-oh, this story is getting long.\" But then the story was over, and I said to myself: \"You know, that story wasn't too long after all.\" I forget what the story was about, but there was a good movie on the plane. It was a little long, though. - Deep Thoughts by Jack Handy",
+  "If you ever have to steal money from your kid, and later on he discovers it's gone, I think a good thing to do is to blame it on Santa Claus. - Deep Thoughts by Jack Handy",
+  "When I think back on all the blessings I have been given in my life, I can't think of a single one, unless you count that rattlesnake that granted me all those wishes. - Deep Thoughts by Jack Handy",
+  "Marta was watching the football game with me when she said, \"You know, most of these sports are based on the idea of one group protecting its territory from invasion by another group.\" \"Yeah,\" I said, trying not to laugh. Girls are funny. - Deep Thoughts by Jack Handy"
+]
+EOF
+}
+
+# Concat all quote methods above into a single array
+quotes_all() {
+  jq -s 'add' \
+    <(quotes_ds9) \
+    <(quotes_jack_handy) \
+    <(quotes_inspiring)
+}
+
+render() {
+  local choices="$1" selected author quote
+
+  selected=$(jq:array:random <<< "$choices")
+  author="${selected##* - }"
+  quote="${selected% - *}"
+
+  color:on normal --italic
+  echo "$quote" | fold -s -w 78
+  color:off
+
+  echo
+  echo "  -- $(str:color "$author" blue --bold)"
+}
+
+main() {
+  local quotes=""
+
+  while [[ $# -gt 0 ]]; do
+    if [[ "$1" =~ ^(--complete|--list) ]]; then
+      [[ "$1" == "--complete" ]] && echo --list
+      list
+      return $?
+    elif [[ "$1" =~ ^- ]]; then
+      warn "Error: Invalid option: $1"
+      return 1
+    else
+      case "$1" in
+        ds9)
+          quotes="$(quotes_ds9)"
+          shift
+          continue
+          ;;
+        jack-handy)
+          quotes="$(quotes_jack_handy)"
+          shift
+          continue
+          ;;
+        inspiring)
+          quotes="$(quotes_inspiring)"
+          shift
+          continue
+          ;;
+        *)
+          warn "Error: Invalid argument: $1"
+          return 1
+          ;;
+      esac
+    fi
+  done
+
+  if [[ -z "$quotes" ]]; then
+    quotes="$(quotes_all)"
+  fi
+
+  render "$quotes"
+}
+
+main "$@"
