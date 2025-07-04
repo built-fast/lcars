@@ -1,0 +1,303 @@
+#!/usr/bin/env bash
+# Usage: lcars app:new <app-name> [--database=TYPE] [--test-framework=TYPE] [--pint-mode=MODE] [--phpstan-level=LEVEL] [--sail]
+# Summary: Creates a new Laravel app with sensible defaults
+#
+# NAME
+#   lcars app:new -- Creates a new Laravel app with sensible defaults
+#
+# SYNOPSIS
+#   lcars app:new <app-name> [--database=TYPE] [--test-framework=TYPE] [--pint-mode=MODE] [--phpstan-level=LEVEL] [--sail]
+#
+# DESCRIPTION
+#   lcars app:new creates a new Laravel app with sensible defaults including
+#   Pest or PHPUnit for testing, Pint for code formatting, and Larastan for
+#   static analysis.
+#
+# OPTIONS
+#   -d <type>, --database <type>
+#       Database type (default: sqlite). Valid options: sqlite, mysql,
+#       mariadb, pgsql, sqlsrv
+#
+#   -t <type>, --test-framework <type>
+#       Test framework (default: pest). Valid options: pest, phpunit.
+#
+#   --pint-mode <mode>
+#       Pint configuration mode (default: strict). Valid options: standard, strict.
+#       Standard uses basic Laravel preset, strict uses comprehensive rules.
+#
+#   --phpstan-level <level>
+#       PHPStan analysis level (default: 7). Valid options: 0-9.
+#
+#   --sail
+#       Keep Laravel Sail installed (default: removes Sail).
+#
+# EXAMPLES
+#   lcars app:new myapp
+#   lcars app:new myapp --database=mysql
+#   lcars app:new myapp --test-framework=phpunit
+#   lcars app:new myapp --pint-mode=standard
+#   lcars app:new myapp --phpstan-level=6
+#   lcars app:new myapp --sail
+#   lcars app:new myapp --database=pgsql --test-framework=phpunit --pint-mode=strict --phpstan-level=8 --sail
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+# Default values
+DATABASE="sqlite"
+TEST_FRAMEWORK="pest"
+PINT_MODE="strict"
+PHPSTAN_LEVEL="7"
+KEEP_SAIL=false
+
+# Parse command line arguments
+argv=$(getopt \
+  --name "lcars ${0##*/lcars-}" \
+  --options d:t: \
+  --longoptions database:,test-framework:,pint-mode:,phpstan-level:,sail \
+  -- \
+  "$@"
+) || exit $?
+
+eval set -- "$argv"
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -d|--database)
+      DATABASE="$2"
+      shift 2
+      ;;
+    -t|--test-framework)
+      TEST_FRAMEWORK="$2"
+      shift 2
+      ;;
+    --pint-mode)
+      PINT_MODE="$2"
+      shift 2
+      ;;
+    --phpstan-level)
+      PHPSTAN_LEVEL="$2"
+      shift 2
+      ;;
+    --sail)
+      KEEP_SAIL=true
+      shift
+      ;;
+    --)
+      shift
+      break
+      ;;
+    *)
+      echo "Unknown option $1"
+      exit 1
+      ;;
+  esac
+done
+
+# Check if app name is provided
+if [[ $# -eq 0 ]]; then
+  exec lcars-help --usage app:new
+fi
+
+APP_NAME="$1"
+
+# Validate database option
+case "$DATABASE" in
+  sqlite|mysql|mariadb|pgsql|sqlsrv)
+    ;;
+  *)
+    echo "Error: Invalid database type '$DATABASE'"
+    echo "Valid options: sqlite, mysql, mariadb, pgsql, sqlsrv"
+    exit 1
+    ;;
+esac
+
+# Validate test framework option
+case "$TEST_FRAMEWORK" in
+  pest|phpunit)
+    ;;
+  *)
+    echo "Error: Invalid test framework '$TEST_FRAMEWORK'"
+    echo "Valid options: pest, phpunit"
+    exit 1
+    ;;
+esac
+
+# Validate pint mode option
+case "$PINT_MODE" in
+  standard|strict)
+    ;;
+  *)
+    echo "Error: Invalid pint mode '$PINT_MODE'"
+    echo "Valid options: standard, strict"
+    exit 1
+    ;;
+esac
+
+# Validate phpstan level option
+case "$PHPSTAN_LEVEL" in
+  0|1|2|3|4|5|6|7|8|9)
+    ;;
+  *)
+    echo "Error: Invalid PHPStan level '$PHPSTAN_LEVEL'"
+    echo "Valid options: 0-9"
+    exit 1
+    ;;
+esac
+
+# Check if Laravel installer is available
+if ! command -v laravel &> /dev/null; then
+  echo "Error: Laravel installer not found."
+  echo ""
+  echo "To install the Laravel installer, run:"
+  echo "  composer global require laravel/installer"
+  echo ""
+  echo "Make sure ~/.composer/vendor/bin is in your PATH."
+  exit 1
+fi
+
+echo "Creating Laravel application '$APP_NAME' with database: $DATABASE, test framework: $TEST_FRAMEWORK"
+
+# Create Laravel application
+if [[ "$TEST_FRAMEWORK" == "pest" ]]; then
+  laravel new "$APP_NAME" --pest --no-interaction --database="$DATABASE"
+else
+  laravel new "$APP_NAME" --no-interaction --database="$DATABASE"
+fi
+
+# Change to the new app directory
+cd "$APP_NAME"
+
+if [[ "$KEEP_SAIL" == false ]]; then
+  echo "Removing Laravel Sail..."
+  composer remove --dev laravel/sail
+fi
+
+echo "Installing Pint..."
+composer require --dev laravel/pint
+
+echo "Configuring Pint..."
+if [[ "$PINT_MODE" == "standard" ]]; then
+  cat > pint.json << 'EOF'
+{
+    "preset": "laravel"
+}
+EOF
+else
+  cat > pint.json << 'EOF'
+{
+    "preset": "laravel",
+    "rules": {
+        "array_push": true,
+        "backtick_to_shell_exec": true,
+        "date_time_immutable": true,
+        "declare_strict_types": true,
+        "lowercase_keywords": true,
+        "lowercase_static_reference": true,
+        "final_class": true,
+        "final_internal_class": true,
+        "final_public_method_for_abstract_class": true,
+        "fully_qualified_strict_types": {
+            "import_symbols": true
+        },
+        "global_namespace_import": {
+            "import_classes": true,
+            "import_constants": true,
+            "import_functions": true
+        },
+        "mb_str_functions": true,
+        "modernize_types_casting": true,
+        "new_with_parentheses": false,
+        "no_superfluous_elseif": true,
+        "no_useless_else": true,
+        "no_multiple_statements_per_line": true,
+        "ordered_class_elements": {
+            "order": [
+                "use_trait",
+                "case",
+                "constant",
+                "constant_public",
+                "constant_protected",
+                "constant_private",
+                "property_public",
+                "property_protected",
+                "property_private",
+                "construct",
+                "destruct",
+                "magic",
+                "phpunit",
+                "method_abstract",
+                "method_public_static",
+                "method_public",
+                "method_protected_static",
+                "method_protected",
+                "method_private_static",
+                "method_private"
+            ],
+            "sort_algorithm": "none"
+        },
+        "ordered_interfaces": true,
+        "ordered_traits": true,
+        "protected_to_private": true,
+        "self_accessor": true,
+        "self_static_accessor": true,
+        "strict_comparison": true,
+        "visibility_required": true
+    }
+}
+EOF
+fi
+
+echo "Installing Larastan..."
+composer require --dev larastan/larastan
+
+echo "Configuring Larastan..."
+if [[ "$TEST_FRAMEWORK" == "pest" ]]; then
+  cat > phpstan.neon.dist << EOF
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - vendor/nesbot/carbon/extension.neon
+    - vendor/pestphp/pest/extension.neon
+
+parameters:
+    paths:
+        - app/
+        - routes/
+    level: $PHPSTAN_LEVEL
+EOF
+else
+  cat > phpstan.neon.dist << EOF
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - vendor/nesbot/carbon/extension.neon
+
+parameters:
+    paths:
+        - app/
+        - routes/
+    level: $PHPSTAN_LEVEL
+EOF
+fi
+
+echo "Running Pint to format all files..."
+./vendor/bin/pint
+
+echo ""
+echo "✅ Laravel application '$APP_NAME' created successfully!"
+echo "   Database: $DATABASE"
+echo "   Testing: $TEST_FRAMEWORK"
+echo "   Code style: Pint configured ($PINT_MODE mode)"
+echo "   Static analysis: Larastan configured (level $PHPSTAN_LEVEL)"
+echo ""
+echo "To get started:"
+echo "   cd $APP_NAME"
+echo "   php artisan serve"

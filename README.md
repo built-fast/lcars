@@ -97,6 +97,7 @@ COMMANDS
   app:encrypt         Encrypts input data using Laravel's encryption service
   app:environment     Prints the current application environment
   app:eval            Runs the given PHP code in the context of a Laravel application
+  app:new             Creates a new Laravel app with sensible defaults
   app:reset           Fully resets the application database and clears caches.
   app:root            Prints the application root path
   cli:aliases         Lists all LCARS aliases
