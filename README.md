@@ -111,11 +111,9 @@ COMMANDS
   hash:random         Generates a random hash using OpenSSL
   hash:sha1           Hashes a string or file contents using SHA-1
   hash:sha256         Hashes a string or file contents using SHA-256
-  history-lesson      Prints today's random facts
   inspect:headers     Makes a cURL request and prints the headers
   inspect:php:ext     Checks if a PHP extension is installed
   inspect:ssl:expiry  Prints SSL expiration dates for domains
-  quote               Satisfaction is not guaranteed
   test                Runs Pint, Pest, PHPStan, and ShellCheck tests
   test:pest           Runs Pest test suite
   test:phpstan        Runs PHPStan on PHP files in the project
