@@ -25,12 +25,12 @@ share/man/man1/lcars.1: doc/man/lcars.1.md
 	pandoc $< -s -t man -o $@
 
 .PHONY: install
-install:
+install: ## install LCARS
 	for dir in $(INSTALL_DIRS); do mkdir -p $(DESTDIR)$(PREFIX)/$$dir; done
 	for file in $(INSTALL_FILES); do cp -P $$file $(DESTDIR)$(PREFIX)/$$file; done
 
 .PHONY: uninstall
-uninstall:
+uninstall: ## uninstall LCARS
 	for file in $(INSTALL_FILES); do rm -f $(DESTDIR)$(PREFIX)/$$file; done
 
 .PHONY: archive
