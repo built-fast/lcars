@@ -58,6 +58,9 @@ Laravel application integration for development and deployment tasks:
 **app:reset**
 :   Fully resets the application database, runs migrations, and clears all caches. Use with caution.
 
+**app:new** *app-name* [*options*]
+:   Creates a new Laravel application with sensible defaults including Pest/PHPUnit for testing, Pint for code formatting, and Larastan for static analysis. Supports database selection (sqlite, mysql, mariadb, pgsql, sqlsrv), test framework choice (pest, phpunit), Pint mode (standard, strict), PHPStan level (0-9), and optional Laravel Sail removal.
+
 **app:root**
 :   Prints the Laravel application root directory path.
 
@@ -170,10 +173,11 @@ General system utility functions:
 **help** [*command*]
 :   General help system for LCARS commands. Shows command overview or detailed help for specific commands.
 
-**quote** [**--list**|*source*]
-:   Displays random quotes from various sources including DS9, inspiring quotes, and Jack Handy. Use --list to see available sources.
 
 # EXAMPLES
+
+Create new Laravel application:
+:   **lcars app:new** myapp --database=mysql --test-framework=pest
 
 Launch interactive Artisan command selector:
 :   **lcars app:artisan**
@@ -224,8 +228,6 @@ Get help for a specific command:
 **$_LCARS_ROOT/share/lcars/stdlib.sh**
 :   Standard library functions used by LCARS commands.
 
-**$_LCARS_ROOT/share/lcars/quotes/**
-:   Quote collections for the quote command.
 
 # EXIT STATUS
 

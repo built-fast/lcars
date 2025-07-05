@@ -66,6 +66,14 @@ Fully resets the application database, runs migrations, and clears all
 caches.
 Use with caution.
 .TP
+\f[B]app:new\f[R] \f[I]app\-name\f[R] [\f[I]options\f[R]]
+Creates a new Laravel application with sensible defaults including
+Pest/PHPUnit for testing, Pint for code formatting, and Larastan for
+static analysis.
+Supports database selection (sqlite, mysql, mariadb, pgsql, sqlsrv),
+test framework choice (pest, phpunit), Pint mode (standard, strict),
+PHPStan level (0\-9), and optional Laravel Sail removal.
+.TP
 \f[B]app:root\f[R]
 Prints the Laravel application root directory path.
 .SS CLI Management (cli:)
@@ -183,12 +191,11 @@ Supports search.
 \f[B]help\f[R] [\f[I]command\f[R]]
 General help system for LCARS commands.
 Shows command overview or detailed help for specific commands.
-.TP
-\f[B]quote\f[R] [\f[B]\(enlist\f[R]|\f[I]source\f[R]]
-Displays random quotes from various sources including DS9, inspiring
-quotes, and Jack Handy.
-Use \(enlist to see available sources.
 .SH EXAMPLES
+.TP
+Create new Laravel application:
+\f[B]lcars app:new\f[R] myapp \(endatabase=mysql
+\(entest\-framework=pest
 .TP
 Launch interactive Artisan command selector:
 \f[B]lcars app:artisan\f[R]
@@ -238,9 +245,6 @@ Directory containing all LCARS command implementations.
 .TP
 **$_LCARS_ROOT/share/lcars/stdlib.sh**
 Standard library functions used by LCARS commands.
-.TP
-**$_LCARS_ROOT/share/lcars/quotes/**
-Quote collections for the quote command.
 .SH EXIT STATUS
 .TP
 \f[B]0\f[R]
