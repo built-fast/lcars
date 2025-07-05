@@ -136,6 +136,38 @@ ALIASES
   test:types:  test:phpstan
 ```
 
+## Development
+
+### Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository at https://github.com/built-fast/lcars
+2. Create a feature branch: `git checkout -b feature-name`
+3. Make your changes and test them locally
+4. Run the test suite: `make test` (requires `gh extension install built-fast/gh-shellcheck`)
+5. If required, update `doc/man/lcars.1.md` with any new commands or options
+   - Use `make man` to generate the man page (requires `pandoc`; i.e. `brew
+     install pandoc`)
+6. Commit your changes with a clear message
+7. Push to your fork and submit a pull request
+
+Please ensure your code follows the existing style and passes ShellCheck.
+
+### Homebrew Formula
+
+This project includes automated release workflows:
+
+- **Automated Releases**: When a new tag matching `v*` is pushed, GitHub
+  Actions automatically creates a release with a zip archive
+- **Homebrew Integration**: Releases automatically trigger an update to the
+  Homebrew tap at [`built-fast/homebrew-devtools`](https://github.com/built-fast/homebrew-devtools)
+- **Archive Generation**: The workflow uses `make archive` to create properly
+  formatted release packages
+
+The automation ensures consistent releases and keeps the Homebrew formula
+up-to-date without manual intervention.
+
 ## License
 
 MIT License - see [`LICENSE`](./LICENSE) in this repo.
