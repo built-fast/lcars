@@ -28,7 +28,7 @@ jobs:
 
       - name: Update homebrew tap
         run: |
-          gh workflow run release.yml \
+          gh workflow run bump-formula.yml \
             -f formula=lcars \
             -f version=${{ env.VERSION }} \
             -R built-fast/homebrew-devtools
