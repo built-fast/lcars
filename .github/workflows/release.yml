@@ -1,0 +1,33 @@
+name: Upload zip on new tag
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    permissions:
+      actions: write
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get version
+        id: version
+        run: echo "VERSION=${GITHUB_REF##refs/tags/}" >> "$GITHUB_ENV"
+
+      - name: Prepare zip archive
+        run: VERSION=${{ env.VERSION }} make archive
+
+      - name: Upload archive to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: pkg/lcars-${{ env.VERSION }}.zip
+
+      - name: Update homebrew tap
+        run: gh workflow run release.yml -f version=${{ env.VERSION }} -R built-fast/homebrew-devtools
+        env:
+          # https://github.com/settings/personal-access-tokens
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
