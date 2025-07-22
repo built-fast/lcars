@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# Usage: lcars util:screenshot <file>
+# Summary: Saves a screenshot to the specified path
+#
+# NAME
+#   lcars util:screenshot -- saves a screenshot to the specified path
+#
+# SYNOPSIS
+#   lcars util:screenshot <file>
+#
+# DESCRIPTION
+#   lcars util:screenshot takes a screenshot and saves it to the specified
+#   file. The screenshot is taken interactively, allowing you to select the
+#   area of the screen to capture. Press the space key to capture a window, or
+#   click and drag to select a region. The screenshot is saved in PNG format.
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+if ! command -v screencapture &> /dev/null; then
+  echo "Error: 'screencapture' command not found. This script requires macOS."
+  exit 1
+fi
+
+if [[ $# -ne 1 ]]; then
+  exec lcars-help --usage util:screenshot
+fi
+
+DESTINATION="$1"
+
+if [[ ! -d "$(dirname "$DESTINATION")" ]]; then
+  echo "Error: Destination directory does not exist."
+  exit 1
+elif [[ -f "$DESTINATION" ]]; then
+  echo "Error: Destination file already exists."
+  exit 1
+fi
+
+screencapture -i -J selection "$DESTINATION"

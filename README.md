@@ -125,6 +125,7 @@ COMMANDS
   util:paste          Pastes the contents of the clipboard
   util:path           Prints your current PATH
   util:retry          Retries a command
+  util:screenshot     Saves a screenshot to the specified path
 
 See `lcars help <command>' for information on a specific command.
 

@@ -159,6 +159,9 @@ General system utility functions:
 **util:retry** [*options*] *command*
 :   Retries failed commands with configurable attempts and delay.
 
+**util:screenshot** *file*
+:   Takes an interactive screenshot and saves it to the specified file path. Allows selection of screen regions or windows. Press space to capture a window, or click and drag to select a custom region. Screenshots are saved in PNG format. macOS only.
+
 ## Standalone Commands
 
 **completions**
@@ -205,6 +208,9 @@ Get public IP address:
 
 Open Laravel Tinker console:
 :   **lcars console**
+
+Take an interactive screenshot:
+:   **lcars util:screenshot** ~/Desktop/screenshot.png
 
 Get help for a specific command:
 :   **lcars help** app:artisan

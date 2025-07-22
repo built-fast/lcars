@@ -175,6 +175,14 @@ Displays the current PATH environment variable in a readable format.
 .TP
 \f[B]util:retry\f[R] [\f[I]options\f[R]] \f[I]command\f[R]
 Retries failed commands with configurable attempts and delay.
+.TP
+\f[B]util:screenshot\f[R] \f[I]file\f[R]
+Takes an interactive screenshot and saves it to the specified file path.
+Allows selection of screen regions or windows.
+Press space to capture a window, or click and drag to select a custom
+region.
+Screenshots are saved in PNG format.
+macOS only.
 .SS Standalone Commands
 .TP
 \f[B]completions\f[R]
@@ -224,6 +232,9 @@ Get public IP address:
 .TP
 Open Laravel Tinker console:
 \f[B]lcars console\f[R]
+.TP
+Take an interactive screenshot:
+\f[B]lcars util:screenshot\f[R] \(ti/Desktop/screenshot.png
 .TP
 Get help for a specific command:
 \f[B]lcars help\f[R] app:artisan
