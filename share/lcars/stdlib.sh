@@ -338,10 +338,6 @@ color:on() {
 
   if [[ "$name" == "normal" ]]; then
     spec="${code}m"
-
-    echo -n -e "\033[${spec}"
-
-    return 0
   fi
 
   spec=""
@@ -355,6 +351,8 @@ color:on() {
         spec="$spec;$(color:codes italic)" ;;
       --invert)
         spec="$spec;$(color:codes invert)" ;;
+      --underline)
+        spec="$spec;$(color:codes underline)" ;;
       --bright)
         code=$((code + 60)) ;;
       bg-*)
@@ -381,9 +379,7 @@ str:color() {
 
   shift
 
-  color:on "$@"
-  printf "%s" "$text"
-  color:off
+  printf "%s" "$(color:on "$@")${text}$(color:off)"
 }
 export -f str:color
 
