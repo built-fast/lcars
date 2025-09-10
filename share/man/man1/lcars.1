@@ -163,6 +163,14 @@ Copies strings to the system clipboard.
 Works with pbcopy (macOS) and xclip (Linux).
 Reads from stdin if no string provided.
 .TP
+\f[B]util:git:stats\f[R] [\f[I]git\-log\-options\f[R]]
+Shows lines added and deleted by author in a git repo.
+Displays git statistics grouped by author, showing lines added, deleted,
+and net change.
+All git log options are supported and passed through, such as
+\(ensince=\(lq1 year ago\(rq, \(enauthor=\(lqname\(rq,
+\(enuntil=\(lq2023\-12\-31\(rq, main..feature\-branch.
+.TP
 \f[B]util:ip\f[R] [\f[B]\-4\f[R]|\f[B]\-6\f[R]]
 Gets public IP address using CloudFlare DNS.
 Supports both IPv4 (default) and IPv6.

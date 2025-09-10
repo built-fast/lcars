@@ -147,6 +147,9 @@ General system utility functions:
 **util:copy** [*string*]
 :   Copies strings to the system clipboard. Works with pbcopy (macOS) and xclip (Linux). Reads from stdin if no string provided.
 
+**util:git:stats** [*git-log-options*]
+:   Shows lines added and deleted by author in a git repo. Displays git statistics grouped by author, showing lines added, deleted, and net change. All git log options are supported and passed through, such as --since="1 year ago", --author="name", --until="2023-12-31", main..feature-branch.
+
 **util:ip** [**-4**|**-6**]
 :   Gets public IP address using CloudFlare DNS. Supports both IPv4 (default) and IPv6.
 

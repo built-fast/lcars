@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# Usage: lcars util:git:stats [git-log-options]
+# Summary: Shows lines added and deleted by author in a git repo
+#
+# NAME
+#   lcars util:git:stats -- Shows lines added and deleted by author in a git
+#                           repo
+#
+# DESCRIPTION
+#   Displays git statistics grouped by author, showing lines added, deleted,
+#   and net change.
+#
+# OPTIONS
+#   All git log options are supported and passed through, such as:
+#
+#     --since="1 year ago"     Show stats since a specific date
+#     --author="name"          Filter by author name
+#     --until="2023-12-31"     Show stats until a specific date
+#     main..feature-branch     Show stats for commits in range
+#
+#   -h, --help
+#     Print this help message and exit.
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+git log "$@" --pretty=format:"---%an <%ae>" --numstat | awk "
+  /^---/ {
+    line = substr(\$0,4)
+    start = index(line, \"<\")
+    end = index(line, \">\")
+    if (start > 0 && end > start) {
+      email = substr(line, start+1, end-start-1)
+      name = substr(line, 1, start-2)
+      if (!(email in names)) {
+        names[email] = name
+      }
+      commits[email]++
+    }
+    next
+  }
+  NF == 3 && email != \"\" { added[email]+=\$1; deleted[email]+=\$2 }
+  END {
+    printf \"Author\tCommits\tAdded\tDeleted\tNet\n\"
+    total_commits = 0
+    total_added = 0
+    total_deleted = 0
+    for (e in added) {
+      printf \"%s\t%'d\t%'d\t%'d\t%'d\n\", names[e], commits[e], added[e], deleted[e], added[e] - deleted[e]
+      total_commits += commits[e]
+      total_added += added[e]
+      total_deleted += deleted[e]
+    }
+    printf \"Total\t%'d\t%'d\t%'d\t%'d\n\", total_commits, total_added, total_deleted, total_added - total_deleted
+  }
+" | {
+  if [[ -t 1 ]]; then
+    column -t -s $'\t' | sed "1s/.*/$(str:color "&" normal --bright --bold)/"
+  else
+    cat
+  fi
+}

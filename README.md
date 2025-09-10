@@ -121,6 +121,7 @@ COMMANDS
   test:pint           Runs Pint on PHP files in the project
   test:shellcheck     Runs ShellCheck on all Bash files in the project
   util:copy           Copies strings to the clipboard
+  util:git:stats      Shows lines added and deleted by author in a git repo
   util:ip             Prints public IP address using CloudFlare DNS
   util:paste          Pastes the contents of the clipboard
   util:path           Prints your current PATH
