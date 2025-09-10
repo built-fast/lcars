@@ -234,9 +234,41 @@ print_help() {
   fi
 }
 
+# Converts PHP style comments to shell style comments for the parser below
+convert_php_comments() {
+  grep -v "^<?php" |
+    awk '
+      /^[[:space:]]*\/\*\*?[[:space:]]*$/ {
+        in_comment = 1
+        next
+      }
+      /^[[:space:]]*\*\/[[:space:]]*$/ {
+        in_comment = 0
+        next
+      }
+      in_comment && /^[[:space:]]*\*/ {
+        gsub(/^[[:space:]]*\*[[:space:]]?/, "// ")
+        print
+        next
+      }
+      in_comment {
+        # Handle lines inside comment block without * prefix
+        if (/^[[:space:]]*$/) {
+          print "//"
+        } else {
+          gsub(/^[[:space:]]*/, "// ")
+          print
+        }
+        next
+      }
+      { print }
+    ' |
+    sed "s,^//,#,"
+}
+
 # Prints raw help docs from the given file with comments removed.
 extract_initial_comment_block() {
-  sed -ne "
+  convert_php_comments | sed -ne "
     /^#/ !{
       q
     }
