@@ -24,15 +24,26 @@ fi
 set -euo pipefail
 
 main() {
+  local command_prefix="lcars-"
   shopt -s nullglob
 
   {
-    for command in "$_LCARS_ROOT/libexec/lcars-"*; do
-      if [[ -x "$command" ]]; then
-        echo "${command##*/lcars-}"
+    PATH_remain="$PATH"
+    # traverse PATH to find "lcars-" prefixed commands
+    while true; do
+      path="${PATH_remain%%:*}"
+
+      if [[ -n "$path" ]]; then
+        for lcars_command in "$path/$command_prefix"*; do
+          echo "${lcars_command##*lcars-}"
+        done
       fi
+
+      [[ $PATH_remain == *:* ]] || break
+
+      PATH_remain="${PATH_remain#*:}"
     done
-  } | sort
+  } | sort | uniq
 
   shopt -u nullglob
 }

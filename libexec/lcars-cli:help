@@ -121,16 +121,9 @@ set -euo pipefail
 #
 # $1 - Name
 command_path() {
-  local command_name command_path
+  local command_name="${1:-}"
 
-  command_name="${1:-}"
-  command_path="$_LCARS_ROOT/libexec/lcars-$command_name"
-
-  if [[ -x "$command_path" ]]; then
-    printf "%s\\n" "$command_path"
-  else
-    true
-  fi
+  type -P lcars-"$command_name" | head -n1 || true
 }
 
 # Truncates a string by the given length.
