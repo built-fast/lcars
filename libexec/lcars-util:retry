@@ -26,7 +26,7 @@
 #   https://gist.github.com/sj26/88e1c6584397bb7c13bd11108a579746
 
 if [[ "$LCARS_DEBUG" ]]; then
-  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  export PS4='+ [${BASH_SOURCE[0]##*/}:${LINENO}${FUNCNAME[0]:+:${FUNCNAME[0]}()}] '
   set -x
 fi
 

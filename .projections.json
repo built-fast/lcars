@@ -19,7 +19,7 @@
         "#   lcars {snakecase|hyphenate} does something, alright. Good or bad, who knows?",
         "",
         "if [[ \"$LCARS_DEBUG\" ]]; then",
-        "  export PS4='+ [${open}BASH_SOURCE##*/{close}:$LINENO] '",
+        "  export PS4='+ [${open}BASH_SOURCE[0]##*/{close}:${open}LINENO{close}${open}FUNCNAME[0]:+:${open}FUNCNAME[0]{close}(){close}] '",
         "  set -x",
         "fi",
         "",

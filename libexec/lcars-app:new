@@ -41,7 +41,7 @@
 #   lcars app:new myapp --database=pgsql --test-framework=phpunit --pint-mode=strict --phpstan-level=8 --sail
 
 if [[ "$LCARS_DEBUG" ]]; then
-  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  export PS4='+ [${BASH_SOURCE[0]##*/}:${LINENO}${FUNCNAME[0]:+:${FUNCNAME[0]}()}] '
   set -x
 fi
 

@@ -12,7 +12,7 @@
 #   lcars app:environment prints the current application environment
 
 if [[ "$LCARS_DEBUG" ]]; then
-  export PS4='+ [${BASH_SOURCE##*/}:$LINENO] '
+  export PS4='+ [${BASH_SOURCE[0]##*/}:${LINENO}${FUNCNAME[0]:+:${FUNCNAME[0]}()}] '
   set -x
 fi
 
