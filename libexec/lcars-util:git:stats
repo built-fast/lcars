@@ -33,7 +33,7 @@ fi
 
 set -euo pipefail
 
-git log "$@" --pretty=format:"---%an <%ae>" --numstat | awk "
+git log --pretty=format:"---%an <%ae>" --numstat "$@" | awk "
   /^---/ {
     line = substr(\$0,4)
     start = index(line, \"<\")
