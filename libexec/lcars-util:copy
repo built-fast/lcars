@@ -12,7 +12,11 @@
 #
 # DESCRIPTION
 #   lcars util:copy copies the given string to the clipboard. It is a wrapper
-#   around the `pbcopy` command on macOS and `xclip` on Linux.
+#   around the `pbcopy` command on macOS, `xclip` on Linux, and `clip.exe` on
+#   Windows.
+#
+# CREDITS
+#   Based on https://github.com/zpm-zsh/clipboard
 
 if [[ "$LCARS_DEBUG" ]]; then
   export PS4='+ [${BASH_SOURCE[0]##*/}:${LINENO}${FUNCNAME[0]:+:${FUNCNAME[0]}()}] '
@@ -26,10 +30,19 @@ fi
 
 set -euo pipefail
 
-os="$(uname)"
-
-case "$os" in
-  Darwin*) pbcopy ;;
-  Linux*) xclip -selection clipboard ;;
-  *) abort "Unsupported OS: $os" ;;
-esac <<< "${1:-$(cat)}"
+if command -v xclip >/dev/null 2>&1; then
+  xclip -selection clipboard -in
+elif command -v xsel >/dev/null 2>&1; then
+  xsel -b
+elif command -v wl-copy >/dev/null 2>&1; then
+  wl-copy
+elif command -v termux-clipboard-set >/dev/null 2>&1; then
+  termux-clipboard-set
+# WSL 1 or 2
+elif [[ $OSTYPE == linux* && -r /proc/version && $(< /proc/version) == *[Mm]icrosoft* ]]; then
+    clip.exe
+elif [[ $OSTYPE == darwin* ]]; then
+  command pbcopy
+elif [[ $OSTYPE == cygwin* || $OSTYPE == msys ]]; then
+  tee > /dev/clipboard
+fi

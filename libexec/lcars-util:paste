@@ -10,7 +10,11 @@
 #
 # DESCRIPTION
 #   lcars util:paste pastes the contents of the clipboard. It is a wrapper
-#   around the `pbpaste` command on macOS and `xclip` on Linux.
+#   around the `pbpaste` command on macOS, `xclip` on Linux, and
+#   `powershell.exe Get-Clipboard` on Windows.
+#
+# CREDITS
+#   Based on https://github.com/zpm-zsh/clipboard
 
 if [[ "$LCARS_DEBUG" ]]; then
   export PS4='+ [${BASH_SOURCE[0]##*/}:${LINENO}${FUNCNAME[0]:+:${FUNCNAME[0]}()}] '
@@ -24,10 +28,19 @@ fi
 
 set -euo pipefail
 
-os="$(uname)"
-
-case "$os" in
-  Darwin*) pbpaste ;;
-  Linux*) xclip -selection clipboard -o ;;
-  *) abort "Unsupported OS: $os" ;;
-esac
+if command -v xclip >/dev/null 2>&1; then
+  xclip -selection clipboard -out
+elif command -v xsel >/dev/null 2>&1; then
+  xsel -b
+elif command -v wl-paste >/dev/null 2>&1; then
+  wl-paste
+elif command -v termux-clipboard-get >/dev/null 2>&1; then
+  termux-clipboard-get
+# WSL 1 or 2
+elif [[ $OSTYPE == linux* && -r /proc/version && $(< /proc/version) == *[Mm]icrosoft* ]]; then
+  powershell.exe -NoProfile -NonInteractive -Command Get-Clipboard
+elif [[ $OSTYPE == darwin* ]]; then
+  command pbpaste
+elif [[ $OSTYPE == cygwin* || $OSTYPE == msys ]]; then
+  echo "$(< /dev/clipboard)"
+fi
