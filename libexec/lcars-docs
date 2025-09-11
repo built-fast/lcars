@@ -162,7 +162,7 @@ if [[ $# -gt 0 ]]; then
     urls+=("$DOCS_URL/$arg")
   done
 
-  open "${urls[@]}"
+  lcars util:open "${urls[@]}"
 else
   chosen=$(render | fzf --multi | awk -v url="$DOCS_URL" '{ printf "%s/%s\n", url, $1 }') || exit 1
 
@@ -172,5 +172,5 @@ else
     urls+=("$line")
   done <<< "$chosen"
 
-  open "${urls[@]}"
+  lcars util:open "${urls[@]}"
 fi

@@ -123,6 +123,7 @@ COMMANDS
   util:copy           Copies strings to the clipboard
   util:git:stats      Shows lines added and deleted by author in a git repo
   util:ip             Prints public IP address using CloudFlare DNS
+  util:open           Opens a file or URL with the default application
   util:paste          Pastes the contents of the clipboard
   util:path           Prints your current PATH
   util:retry          Retries a command

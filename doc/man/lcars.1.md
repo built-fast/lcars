@@ -153,6 +153,9 @@ General system utility functions:
 **util:ip** [**-4**|**-6**]
 :   Gets public IP address using CloudFlare DNS. Supports both IPv4 (default) and IPv6.
 
+**util:open** *file-or-url*
+:   Opens a file or URL with the default application. Cross-platform wrapper around system open commands (xdg-open on Linux, open on macOS, explorer.exe on Windows).
+
 **util:paste**
 :   Pastes contents from the system clipboard to stdout.
 
@@ -208,6 +211,10 @@ Copy text to clipboard:
 
 Get public IP address:
 :   **lcars util:ip**
+
+Open a file or URL:
+:   **lcars util:open** ~/Documents/file.pdf
+:   **lcars util:open** https://laravel.com
 
 Open Laravel Tinker console:
 :   **lcars console**

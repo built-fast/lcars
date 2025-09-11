@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# Usage: lcars util:open <file-or-url>
+# Summary: Opens a file or URL with the default application
+#
+# NAME
+#   lcars util:open -- Opens a file or URL with the default application
+#
+# SYNOPSIS
+#   lcars util:open
+#
+# DESCRIPTION
+#   lcars util:open opens a file or URL with the default application. It is a
+#   wrapper around the `xdg-open` command on Linux, `open` on macOS, and
+#   `explorer.exe` on Windows.
+#
+# CREDITS
+#   Based on https://github.com/zpm-zsh/clipboard
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE[0]##*/}:${LINENO}${FUNCNAME[0]:+:${FUNCNAME[0]}()}] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+# WSL 1 or 2
+if command -v xdg-open >/dev/null 2>&1; then
+  xdg-open "$@"
+elif command -v termux-open >/dev/null 2>&1; then
+  termux-open "$@"
+elif [[ $OSTYPE == darwin* ]]; then
+  command open "$@"
+elif [[ $OSTYPE == cygwin* ]]; then
+  if command -v cygstart >/dev/null 2>&1; then
+    cygstart "$@"
+  else
+    start "$@"
+  fi
+elif [[ $OSTYPE == linux* && -r /proc/version &&
+    $(< /proc/version) == *[Mm]icrosoft* ]]; then
+  explorer.exe "$@"
+elif [[ $OSTYPE == msys ]]; then
+  explorer.exe "$(cygpath -w "$@")"
+fi
