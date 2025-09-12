@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# Usage: lcars util:jqf
+# Summary: A jq file navigator using fzf
+#
+# NAME
+#   lcars util:jqf -- A jq file navigator using fzf
+#
+# SYNOPSIS
+#   lcars util:jqf
+#
+# DESCRIPTION
+#   lcars util:jqf is a utility that helps you navigate and query JSON files
+#   using jq and fzf.
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE[0]##*/}:${LINENO}${FUNCNAME[0]:+:${FUNCNAME[0]}()}] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+if [[ "$1" == "--paths" ]]; then
+  jq -r '[
+    path(..)
+    | map(
+      select(type == "string" and (test("[^a-zA-Z0-9_]") or test("^[0-9]"))) |= "[\"" + . + "\"]"
+    )
+    | map(
+      select(type == "number") |= "[]"
+    )
+    | join(".")
+  ]
+  | sort | unique | .[] | split(".[") | join("[") | "." + .
+  '
+  exit
+fi
+
+input="$1"
+
+if [[ -z "$input" ]]; then
+  echo "Must specify a file"
+  exit 1
+fi
+
+if [[ ! -f "$input" ]]; then
+  echo "File not found: $input"
+  exit 1
+fi
+  # --preview "jq -C {q}" \
+
+# shellcheck disable=SC2016
+"$0" --paths < "$input" | fzf \
+  --prompt 'jq › ' \
+  --no-sort \
+  --height 100% \
+  --ghost '  filter by keys above and press enter, ^d to quit' \
+  --preview 'arg={q}; jq -C "${arg:-.}" '"$input" \
+  --preview-window left \
+  --preview-label "{q}" \
+  --bind "ctrl-c:clear-query" \
+  --bind "esc:clear-query" \
+  --bind "ctrl-d:abort" \
+  --bind "result:transform-preview-label(arg={q}; echo \"jq \${arg:-.} $input\")" \
+  --bind "change:transform-preview-label(arg={q}; echo \"jq \${arg:-.} $input\")" \
+  --bind "focus:transform-preview-label(arg={q}; echo \"jq \${arg:-.} $input\")" \
+  --bind "ctrl-p:preview-half-page-up,ctrl-n:preview-half-page-down" \
+  --bind "tab:replace-query,enter:replace-query"
