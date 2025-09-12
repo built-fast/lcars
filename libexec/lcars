@@ -27,6 +27,8 @@ fi
 
 set -e
 
+export LCARS_VERSION="0.1.5"
+
 resolve_link() {
   $(type -p greadlink readlink | head -1) "$1"
 }
@@ -66,6 +68,13 @@ case "$command" in
     # If `lcars --root` was called, print the directory this project is
     # installed to and exit.
     echo "$_LCARS_ROOT"
+    exit 0
+    ;;
+  --version | -V)
+    echo "lcars version $LCARS_VERSION"
+    echo "Laravel CLI and Reusable Scripts"
+    echo
+    echo "https://github.com/built-fast/lcars"
     exit 0
     ;;
   *)
