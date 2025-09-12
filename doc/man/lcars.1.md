@@ -1,6 +1,6 @@
 % LCARS(1) lcars | User Commands
 % 
-% June 2025
+% September 2025
 
 # NAME
 
@@ -13,6 +13,8 @@ lcars - Laravel CLI and Reusable Scripts
 **lcars** **\-\-help** | **-h**
 
 **lcars** **\-\-root**
+
+**lcars** **\-\-version** | **-V**
 
 # DESCRIPTION
 
@@ -30,6 +32,9 @@ The command structure follows a clear namespace pattern with colons separating c
 
 **\-\-root**
 :   Print the root directory that LCARS is installed to and exit.
+
+**\-\-version**
+:   Print the LCARS version number and exit.
 
 # COMMANDS
 
