@@ -135,18 +135,6 @@ jq() {
 }
 export -f jq
 
-# Reads a JSON file containing an array and returns a random element from it.
-jq:array:random() {
-  local content count
-
-  content="$(cat)"
-
-  count="$(jq -r length <<< "$content")"
-
-  jq -r --arg i "$((RANDOM % count))" '.[$i|tonumber]' <<< "$content" 2> /dev/null
-}
-export -f jq:array:random
-
 # ASCII color codes
 color:codes() {
   local name="${1:-normal}"

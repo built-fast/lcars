@@ -292,6 +292,16 @@ quotes_all() {
     <(quotes_inspiring)
 }
 
+jq:array:random() {
+  local content count
+
+  content="$(cat)"
+
+  count="$(jq -r length <<< "$content")"
+
+  jq -r --arg i "$((RANDOM % count))" '.[$i|tonumber]' <<< "$content" 2> /dev/null
+}
+
 render() {
   local choices="$1" selected author quote
 
