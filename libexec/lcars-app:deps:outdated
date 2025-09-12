@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+# Usage: lcars app:deps:outdated [<composer.json or package.json files>...]
+# Summary: Show outdated dependencies for the current app
+#
+# NAME
+#   lcars app:deps:outdated -- Show outdated dependencies for the current app
+#
+# SYNOPSIS
+#   lcars app:deps:outdated [<composer.json or package.json files>...]
+#   lcars app:deps:outdated backend/composer.json frontend/package.json
+#
+# DESCRIPTION
+#   lcars app:deps:outdated shows a list of outdated dependencies for the
+#   current app.
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE[0]##*/}:${LINENO}${FUNCNAME[0]:+:${FUNCNAME[0]}()}] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+composer_outdated() {
+  local composer_file="$1"
+
+  (cd "$(dirname "$composer_file")" && composer outdated --direct --format json) | jq -r '
+    .installed[] | [
+      "Composer (Backend)",
+      "\(.name)",
+      "\(.version | gsub("^v"; ""))",
+      "\(.latest | gsub("^v"; ""))"
+    ]
+  '
+}
+
+npm_outdated() {
+  local npm_file="$1"
+
+  (cd "$(dirname "$npm_file")" && npm outdated --json) | jq -r '
+    to_entries[] | [
+      "NPM (Frontend)",
+      "\(.key)",
+      "\(.value | .current)",
+      "\(.value | .latest)"
+    ]
+  '
+}
+
+format_entries() {
+  jq -s -r '
+    ( if (. | length) == 0 then
+        [["No outdated dependencies found."]]
+      else
+        [["Platform", "Package", "Current", "Latest"]] + .
+      end
+    ) | map(@tsv) | join("\n")
+  '
+}
+
+print_entires() {
+  local is_tty=no
+
+  [[ -t 1 ]] && is_tty=yes
+
+  if [[ "$is_tty" = yes ]]; then
+    column -t -s $'\t' | sed "1s/.*/$(str:color "&" blue --bold)/"
+  else
+    cat
+  fi
+}
+
+main() {
+  local file
+
+  { for file in "$@"; do
+      if [[ ! -f "$file" ]]; then
+        continue
+      fi
+
+      case "${file##*/}" in
+        composer.json)
+          composer_outdated "$file"
+          ;;
+        package.json)
+          npm_outdated "$file"
+          ;;
+      esac
+    done
+  } | format_entries | print_entires
+}
+
+if [[ $# -eq 0 ]]; then
+  set -- composer.json package.json frontend/package.json
+fi
+
+main "$@"

@@ -46,6 +46,9 @@ Laravel application integration for development and deployment tasks:
 **app:decrypt** [*data*]
 :   Decrypts input data using Laravel's encryption service. Reads from stdin if no data provided.
 
+**app:deps:outdated** [*composer.json or package.json files*...]
+:   Shows outdated dependencies for the current Laravel application. Checks both Composer (PHP/Laravel) and NPM (frontend) dependencies by default, or specific files if provided. Displays results in a table format with platform, package name, current version, and latest available version. Supports composer.json and package.json files.
+
 **app:encrypt** [*data*]
 :   Encrypts input data using Laravel's encryption service. Reads from stdin if no data provided.
 

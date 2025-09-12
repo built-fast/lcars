@@ -94,6 +94,7 @@ COMMANDS
   app:artisan         Interactive Laravel Artisan command launcher with fuzzy search
   app:console         Opens the Tinker console
   app:decrypt         Decrypts input data using Laravel's encryption service
+  app:deps:outdated   Show outdated dependencies for the current app
   app:encrypt         Encrypts input data using Laravel's encryption service
   app:environment     Prints the current application environment
   app:eval            Runs the given PHP code in the context of a Laravel application

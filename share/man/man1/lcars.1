@@ -49,6 +49,14 @@ Opens the Laravel Tinker REPL console for interactive PHP evaluation.
 Decrypts input data using Laravel\(cqs encryption service.
 Reads from stdin if no data provided.
 .TP
+\f[B]app:deps:outdated\f[R] [\f[I]composer.json or package.json files\f[R]\&...]
+Shows outdated dependencies for the current Laravel application.
+Checks both Composer (PHP/Laravel) and NPM (frontend) dependencies by
+default, or specific files if provided.
+Displays results in a table format with platform, package name, current
+version, and latest available version.
+Supports composer.json and package.json files.
+.TP
 \f[B]app:encrypt\f[R] [\f[I]data\f[R]]
 Encrypts input data using Laravel\(cqs encryption service.
 Reads from stdin if no data provided.
