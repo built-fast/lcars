@@ -7,9 +7,9 @@ lcars \- Laravel CLI and Reusable Scripts
 \f[B]lcars\f[R] [\f[I]OPTION\f[R]] \f[I]COMMAND\f[R]
 [\f[I]ARGS\f[R]\&...]
 .PP
-\f[B]lcars\f[R] \f[B]\(enhelp\f[R] | \f[B]\-h\f[R]
+\f[B]lcars\f[R] \f[B]\-\-help\f[R] | \f[B]\-h\f[R]
 .PP
-\f[B]lcars\f[R] \f[B]\(enroot\f[R]
+\f[B]lcars\f[R] \f[B]\-\-root\f[R]
 .SH DESCRIPTION
 LCARS is a comprehensive CLI toolkit designed specifically for Laravel
 development workflows.
@@ -25,11 +25,11 @@ and organize related functionality.
 \f[B]\-h\f[R]
 Print short help and exit.
 .TP
-\f[B]\(enhelp\f[R]
+\f[B]\-\-help\f[R]
 Print full help text and exit.
 Same as \f[CR]lcars help\f[R].
 .TP
-\f[B]\(enroot\f[R]
+\f[B]\-\-root\f[R]
 Print the root directory that LCARS is installed to and exit.
 .SH COMMANDS
 .SS Application Management (app:)
@@ -150,6 +150,29 @@ Runs PHPStan static analysis on PHP files with optional arguments.
 \f[B]test:pint\f[R] [\f[I]args\f[R]\&...]
 Runs Laravel Pint code formatting on PHP files with optional arguments.
 .TP
+\f[B]test:annotate:cl2pr\f[R]
+Converts Clover XML test results to GitHub Actions annotation format.
+Reads XML data from stdin and outputs a markdown coverage report with
+file\-by\-file statistics, color\-coded coverage indicators (🔴 < 50%,
+🟡 < 70%, 🟢 ≥ 70%), and GitHub\-style callout blocks.
+Suitable for GitHub Actions step summaries.
+.TP
+\f[B]test:annotate:cs2pr\f[R] [\f[I]options\f[R]]
+Converts Checkstyle XML test results to GitHub Actions annotation
+format.
+Reads XML data from stdin.
+Based on the popular cs2pr utility.
+Options include \-\-graceful\-warnings, \-\-colorize,
+\-\-notices\-as\-warnings, \-\-errors\-as\-warnings,
+\-\-prepend\-filename, \-\-prepend\-source.
+.TP
+\f[B]test:annotate:ju2pr\f[R] [\f[I]options\f[R]]
+Converts JUnit XML test results to GitHub Actions annotation format.
+Extracts test failures and errors with file paths and line numbers from
+stack traces.
+Compatible with Vim error format for editor integration.
+Options include \-\-graceful\-warnings and \-\-colorize.
+.TP
 \f[B]test:shellcheck\f[R]
 Runs ShellCheck analysis on all Bash files in the project.
 .TP
@@ -168,12 +191,17 @@ Shows lines added and deleted by author in a git repo.
 Displays git statistics grouped by author, showing lines added, deleted,
 and net change.
 All git log options are supported and passed through, such as
-\(ensince=\(lq1 year ago\(rq, \(enauthor=\(lqname\(rq,
-\(enuntil=\(lq2023\-12\-31\(rq, main..feature\-branch.
+\-\-since=\(lq1 year ago\(rq, \-\-author=\(lqname\(rq,
+\-\-until=\(lq2023\-12\-31\(rq, main..feature\-branch.
 .TP
 \f[B]util:ip\f[R] [\f[B]\-4\f[R]|\f[B]\-6\f[R]]
 Gets public IP address using CloudFlare DNS.
 Supports both IPv4 (default) and IPv6.
+.TP
+\f[B]util:open\f[R] \f[I]file\-or\-url\f[R]
+Opens a file or URL with the default application.
+Cross\-platform wrapper around system open commands (xdg\-open on Linux,
+open on macOS, explorer.exe on Windows).
 .TP
 \f[B]util:paste\f[R]
 Pastes contents from the system clipboard to stdout.
@@ -210,8 +238,8 @@ Shows command overview or detailed help for specific commands.
 .SH EXAMPLES
 .TP
 Create new Laravel application:
-\f[B]lcars app:new\f[R] myapp \(endatabase=mysql
-\(entest\-framework=pest
+\f[B]lcars app:new\f[R] myapp \-\-database=mysql
+\-\-test\-framework=pest
 .TP
 Launch interactive Artisan command selector:
 \f[B]lcars app:artisan\f[R]
@@ -232,11 +260,30 @@ Run complete test suite:
 Run only PHP code style checks:
 \f[B]lcars test\f[R] pint
 .TP
+Convert test coverage to GitHub annotations:
+\f[B]pest \-\-coverage \-\-coverage\-clover clover.xml && lcars
+test:annotate:cl2pr < clover.xml\f[R]
+\f[B]pest \-\-coverage \-\-coverage\-clover >(lcars
+test:annotate:cl2pr)\f[R]
+.TP
+Convert Pint results to GitHub annotations:
+\f[B]pint \-\-test \-\-report checkstyle | lcars
+test:annotate:cs2pr\f[R]
+.TP
+Convert test failures to GitHub annotations:
+\f[B]pest \-\-log\-junit junit.xml && lcars test:annotate:ju2pr <
+junit.xml\f[R]
+\f[B]pest \-\-log\-junit >(lcars test:annotate:ju2pr)\f[R]
+.TP
 Copy text to clipboard:
 \f[B]lcars util:copy\f[R] \(lqImportant text to save\(rq
 .TP
 Get public IP address:
 \f[B]lcars util:ip\f[R]
+.TP
+Open a file or URL:
+\f[B]lcars util:open\f[R] \(ti/Documents/file.pdf
+\f[B]lcars util:open\f[R] https://laravel.com
 .TP
 Open Laravel Tinker console:
 \f[B]lcars console\f[R]

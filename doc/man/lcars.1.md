@@ -10,9 +10,9 @@ lcars - Laravel CLI and Reusable Scripts
 
 **lcars** [*OPTION*] *COMMAND* [*ARGS*...]
 
-**lcars** **--help** | **-h**
+**lcars** **\-\-help** | **-h**
 
-**lcars** **--root**
+**lcars** **\-\-root**
 
 # DESCRIPTION
 
@@ -25,10 +25,10 @@ The command structure follows a clear namespace pattern with colons separating c
 **-h**
 :   Print short help and exit.
 
-**--help**
+**\-\-help**
 :   Print full help text and exit. Same as `lcars help`.
 
-**--root**
+**\-\-root**
 :   Print the root directory that LCARS is installed to and exit.
 
 # COMMANDS
@@ -134,6 +134,15 @@ Comprehensive testing and code quality tools for PHP/Laravel development:
 **test:pint** [*args*...]
 :   Runs Laravel Pint code formatting on PHP files with optional arguments.
 
+**test:annotate:cl2pr**
+:   Converts Clover XML test results to GitHub Actions annotation format. Reads XML data from stdin and outputs a markdown coverage report with file-by-file statistics, color-coded coverage indicators (🔴 < 50%, 🟡 < 70%, 🟢 ≥ 70%), and GitHub-style callout blocks. Suitable for GitHub Actions step summaries.
+
+**test:annotate:cs2pr** [*options*]
+:   Converts Checkstyle XML test results to GitHub Actions annotation format. Reads XML data from stdin. Based on the popular cs2pr utility. Options include \-\-graceful-warnings, \-\-colorize, \-\-notices-as-warnings, \-\-errors-as-warnings, \-\-prepend-filename, \-\-prepend-source.
+
+**test:annotate:ju2pr** [*options*]
+:   Converts JUnit XML test results to GitHub Actions annotation format. Extracts test failures and errors with file paths and line numbers from stack traces. Compatible with Vim error format for editor integration. Options include \-\-graceful-warnings and \-\-colorize.
+
 **test:shellcheck**
 :   Runs ShellCheck analysis on all Bash files in the project.
 
@@ -148,7 +157,7 @@ General system utility functions:
 :   Copies strings to the system clipboard. Works with pbcopy (macOS) and xclip (Linux). Reads from stdin if no string provided.
 
 **util:git:stats** [*git-log-options*]
-:   Shows lines added and deleted by author in a git repo. Displays git statistics grouped by author, showing lines added, deleted, and net change. All git log options are supported and passed through, such as --since="1 year ago", --author="name", --until="2023-12-31", main..feature-branch.
+:   Shows lines added and deleted by author in a git repo. Displays git statistics grouped by author, showing lines added, deleted, and net change. All git log options are supported and passed through, such as \-\-since="1 year ago", \-\-author="name", \-\-until="2023-12-31", main..feature-branch.
 
 **util:ip** [**-4**|**-6**]
 :   Gets public IP address using CloudFlare DNS. Supports both IPv4 (default) and IPv6.
@@ -186,7 +195,7 @@ General system utility functions:
 # EXAMPLES
 
 Create new Laravel application:
-:   **lcars app:new** myapp --database=mysql --test-framework=pest
+:   **lcars app:new** myapp \-\-database=mysql \-\-test-framework=pest
 
 Launch interactive Artisan command selector:
 :   **lcars app:artisan**
@@ -205,6 +214,17 @@ Run complete test suite:
 
 Run only PHP code style checks:
 :   **lcars test** pint
+
+Convert test coverage to GitHub annotations:
+:   **pest \-\-coverage \-\-coverage-clover clover.xml && lcars test:annotate:cl2pr < clover.xml**
+:   **pest \-\-coverage \-\-coverage-clover >(lcars test:annotate:cl2pr)**
+
+Convert Pint results to GitHub annotations:
+:   **pint \-\-test \-\-report checkstyle | lcars test:annotate:cs2pr**
+
+Convert test failures to GitHub annotations:
+:   **pest \-\-log-junit junit.xml && lcars test:annotate:ju2pr < junit.xml**
+:   **pest \-\-log-junit >(lcars test:annotate:ju2pr)**
 
 Copy text to clipboard:
 :   **lcars util:copy** "Important text to save"
