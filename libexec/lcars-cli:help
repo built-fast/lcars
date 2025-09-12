@@ -182,9 +182,11 @@ print_summaries() {
 
 # Find all symlinks in libexec and print them => target
 print_aliases() {
-  lcars-cli:aliases | awk -F': ' '{
-    printf "  %s:\t%s\n", $1, $2
-  }' | column -t -s $'\t'
+  local alias_name command_name
+
+  while IFS= read -r alias_name command_name; do
+    printf "  %s\\t%s\\n" "$alias_name" "$command_name"
+  done < <(lcars-cli:aliases)
 }
 
 # Formats STDIN for final output.

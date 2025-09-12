@@ -27,19 +27,33 @@ set -euo pipefail
 main() {
   shopt -s nullglob
 
-  local file command target
+  local file command target is_tty=no
 
-  for file in "$_LCARS_ROOT"/libexec/lcars-*; do
-    if [[ -h "$file" ]]; then
-      command="${file##*/lcars-}"
-      command="${command%%.*}"
+  [[ -t 1 ]] && is_tty=yes
 
-      target="$(readlink -f "$file")"
-      target="${target##*/lcars-}"
-
-      printf "%s: %s\\n" "$command" "$target"
+  {
+    if [[ "$is_tty" = yes ]]; then
+      printf "Command\\tTarget\\n"
     fi
-  done | sort | column -t -s $'\t'
+
+    for file in "$_LCARS_ROOT"/libexec/lcars-*; do
+      if [[ -h "$file" ]]; then
+        command="${file##*/lcars-}"
+        command="${command%%.*}"
+
+        target="$(readlink -f "$file")"
+        target="${target##*/lcars-}"
+
+        printf "%s\\t%s\\n" "$command" "$target"
+      fi
+    done | sort
+  } | column -t -s $'\t' | {
+    if [[ "$is_tty" = yes ]]; then
+      sed "1s/.*/$(str:color "&" normal --bright --bold)/"
+    else
+      cat
+    fi
+  }
 
   shopt -u nullglob
 }
