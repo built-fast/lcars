@@ -1,15 +1,28 @@
 #!/usr/bin/env bash
-# Usage: lcars cli:config:set <key> <value>
-# Summary: Sets a local LCARS config
+# Usage: lcars cli:config:set <key> [<value>]
+#        lcars cli:config:set key=val key2=val2
 #
 # NAME
-#   lcars cli:config:set -- Sets a local LCARS config
+#   lcars cli:config:set -- Sets a local LCARS config. Omit value to unset.
 #
 # SYNOPSIS
-#   lcars cli:config:set <key> <value>
+#   lcars cli:config:set <key> [<value>]
+#   lcars cli:config:set key=val key2=val2
 #
 # DESCRIPTION
-#   lcars cli:config:set sets a local LCARS config.
+#   lcars cli:config:set sets a local LCARS config. Omit value to unset.
+#
+# EXAMPLES
+#
+#   Set a config value:
+#     lcars cli:config:set token mytoken123
+#
+#   Unset a config value:
+#     lcars cli:config:set token
+#
+#   Set multiple config values:
+#     lcars cli:config:set token=mytoken123 url=https://api.example.com
+#
 
 if [[ "$LCARS_DEBUG" ]]; then
   export PS4='+ [${BASH_SOURCE[0]##*/}:${LINENO}${FUNCNAME[0]:+:${FUNCNAME[0]}()}] '
@@ -23,9 +36,77 @@ fi
 
 set -euo pipefail
 
-if [[ $# -ne 2 ]]; then
+if [[ $# -eq 0 ]]; then
   exec lcars-cli:help -u cli:config:set
   exit 1
 fi
 
-lcars:config:set "$@"
+: "${LCARS_CONFIG:="${XDG_CONFIG_HOME:-$HOME/.config}/lcars.json"}"
+
+generate_config() {
+  local key="$1" value="${2:-}"
+
+  current_config | jq --arg k "$key" --arg v "$value" \
+    '.[$k] = $v | del(.. | select(. == null or . == ""))' #2> /dev/null
+}
+
+current_config() {
+  if [[ ! -f "$LCARS_CONFIG" ]]; then
+    echo "{}"
+  else
+    lcars-cli:config:get -a || {
+      warn "Failed to read config file."
+      rm -f "$tmpconfig"
+      return 1
+    }
+  fi
+}
+
+write_config() {
+  local tmpconfig
+
+  tmpconfig="$(mktemp -t lcars-config-XXXXXX.json)"
+
+  jq -s add > "$tmpconfig" || {
+    warn "Failed to write temporary config file."
+    rm -f "$tmpconfig"
+    return 1
+  }
+
+  # trap 'rm -f "$tmpconfig"' EXIT
+
+  mkdir -p "${LCARS_CONFIG##*/}"
+
+  mv -f "$tmpconfig" "$LCARS_CONFIG" || {
+    warn "Failed to move temporary config file to final location."
+    rm -f "$tmpconfig"
+    return 1
+  }
+  rm -f "$tmpconfig"
+}
+
+main() {
+  local arg key value
+
+  if [[ "$1" == *=* ]]; then
+    {
+      for arg in "$@"; do
+        if [[ "$arg" == *=* ]]; then
+          key="${arg%%=*}"
+          value="${arg#*=}"
+          generate_config "$key" "$value"
+        else
+          abort "Invalid format: $arg (expected key=value)"
+        fi
+      done
+    } | write_config
+  else
+    if [[ $# -gt 2 ]]; then
+      exec lcars-cli:help -u cli:config:set
+      exit 1
+    fi
+    generate_config "$1" "${2:-}" | write_config
+  fi
+}
+
+main "$@"

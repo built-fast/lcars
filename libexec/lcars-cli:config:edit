@@ -1,15 +1,14 @@
 #!/usr/bin/env bash
 # Usage: lcars cli:config:edit
-# Summary: Opens the LCARS config file in $EDITOR
 #
 # NAME
-#   lcars cli:config:edit -- Edit the LCARS config file
+#   lcars cli:config:edit -- Opens the LCARS config file in $EDITOR
 #
 # SYNOPSIS
 #   lcars cli:config:edit
 #
 # DESCRIPTION
-#   lcars cli:config:edit edits the LCARS config file in your $EDITOR.
+#   lcars cli:config:edit opens the LCARS config file in your $EDITOR.
 
 if [[ "$LCARS_DEBUG" ]]; then
   export PS4='+ [${BASH_SOURCE[0]##*/}:${LINENO}${FUNCNAME[0]:+:${FUNCNAME[0]}()}] '
@@ -23,7 +22,9 @@ fi
 
 set -euo pipefail
 
-if [[ ! -f "$(lcars:config:file)" ]]; then
+: "${LCARS_CONFIG:="${XDG_CONFIG_HOME:-$HOME/.config}/lcars.json"}"
+
+if [[ ! -f "$LCARS_CONFIG" ]]; then
   warn "Config file does not exist."
   warn "Create it?"
 
@@ -31,12 +32,12 @@ if [[ ! -f "$(lcars:config:file)" ]]; then
 
   if [[ "$response" =~ ^[Yy]$ ]]; then
     warn "Creating config file..."
-    touch "$(lcars:config:file)"
-    echo "{}" > "$(lcars:config:file)"
+    touch "$LCARS_CONFIG"
+    echo "{}" > "$LCARS_CONFIG"
     warn "Config file created."
   else
     abort "Exiting without creating config file."
   fi
 fi
 
-"$EDITOR" "$(lcars:config:file)"
+"$EDITOR" "$LCARS_CONFIG"

@@ -102,9 +102,6 @@ COMMANDS
   app:root            Prints the application root path
   cli:aliases         Lists all LCARS aliases
   cli:commands        Lists all LCARS commands
-  cli:config:edit     Opens the LCARS config file in $EDITOR
-  cli:config:get      Gets a local LCARS config
-  cli:config:set      Sets a local LCARS config
   cli:help            Prints help for LCARS commands
   cli:update          Updates LCARS
   docs                Open Laravel documentation pages

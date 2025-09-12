@@ -162,75 +162,6 @@ jq:array:random() {
 }
 export -f jq:array:random
 
-lcars:config:file() {
-  : "${LCARS_CONFIG:="${XDG_CONFIG_HOME:-$HOME/.config}/lcars.json"}"
-
-  printf "%s\n" "$LCARS_CONFIG"
-}
-export -f lcars:config:file
-
-lcars:config:read() {
-  local file
-
-  file="$(lcars:config:file)"
-
-  if [[ -f "$file" ]]; then
-    cat "$file"
-  else
-    echo "{}"
-  fi
-}
-export -f lcars:config:read
-
-lcars:config:get() {
-  local key="$1" data="${2-}"
-
-  if [[ -z "$key" ]]; then
-    warn "Usage: lcars:config:get <key> [<data>]"
-    return 1
-  fi
-
-  if [[ -z "$data" ]]; then
-    data="$(lcars:config:read)"
-  fi
-
-  jq --arg k "$key" -r '.[$k]' <<< "$data" 2> /dev/null
-}
-export -f lcars:config:get
-
-lcars:config:set() {
-  local key="$1" value="${2-}" data="${3-}" tmpconfig
-
-  if [[ -z "$key" ]]; then
-    warn "Usage: lcars:config:get <key> [<data>]"
-    return 1
-  fi
-
-  if [[ -z "$data" ]]; then
-    data="$(lcars:config:read)"
-  fi
-
-  tmpconfig="$(mktemp -t lcars-config-XXXXXX.json)"
-
-  # trap 'rm -f "$tmpconfig"' EXIT
-
-  if ! jq --arg k "$key" --arg v "$value"  '.[$k] = $v' <<< "$data" > "$tmpconfig"; then
-    warn "Failed to update config file."
-    rm -f "$tmpconfig"
-    return 1
-  fi
-
-  mkdir -p "$(dirname "$(lcars:config:file)")"
-
-  mv -f "$tmpconfig" "$(lcars:config:file)" || {
-    warn "Failed to move temporary config file to final location."
-    rm -f "$tmpconfig"
-    return 1
-  }
-  rm -f "$tmpconfig"
-}
-export -f lcars:config:set
-
 # Hashes the given file using sha256.
 hash:sha256() {
   if command -v sha256sum &> /dev/null; then
@@ -328,7 +259,7 @@ export -f color:codes
 #     --invert
 #     --dim 4
 color:on() {
-  [[ "${NO_ANSI-}" == "1" ]] && return 0
+  [[ "${_LCARS_IS_TTY-}" == yes ]] || return 0
 
   local name="$1" code spec bg_spec=""
 
@@ -360,7 +291,7 @@ color:on() {
     esac
   done
 
-  echo -n -e "\033[${code}${spec}${bg_spec}m"
+  printf "\e[%s%s%sm" "$code" "$spec" "$bg_spec"
 }
 export -f color:on
 
@@ -379,7 +310,7 @@ str:color() {
 
   shift
 
-  printf "%s" "$(color:on "$@")${text}$(color:off)"
+  printf "%s%s%s" "$(color:on "$@")" "${text}" "$(color:off)"
 }
 export -f str:color
 
