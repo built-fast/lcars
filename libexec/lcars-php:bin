@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# Usage: lcars php:bin
+# Summary: Finds the PHP binary
+#
+# NAME
+#   lcars php:bin -- Finds the PHP binary
+#
+# SYNOPSIS
+#   lcars php:bin
+#
+# DESCRIPTION
+#   lcars php:bin finds the PHP binary in your PATH and prints its full path.
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE[0]##*/}:${LINENO}${FUNCNAME[0]:+:${FUNCNAME[0]}()}] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+main() {
+  local php_bin
+
+  if ! php_bin="$(command -v php)"; then
+    warn "PHP is not installed, or it is not in your PATH."
+    return 1
+  fi
+
+  # TODO try remi and others
+  echo "$php_bin"
+}
+
+main "$@"

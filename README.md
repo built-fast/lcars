@@ -111,8 +111,8 @@ COMMANDS
   hash:sha1           Hashes a string or file contents using SHA-1
   hash:sha256         Hashes a string or file contents using SHA-256
   inspect:headers     Makes a cURL request and prints the headers
-  inspect:php:ext     Checks if a PHP extension is installed
   inspect:ssl:expiry  Prints SSL expiration dates for domains
+  php:ext             Checks if a PHP extension is installed
   test                Runs Pint, Pest, PHPStan, and ShellCheck tests
   test:annotate:cl2pr Convert Clover XML test results to GitHub Actions annotations
   test:annotate:cs2pr Convert Checkstyle XML test results to GitHub Actions annotations

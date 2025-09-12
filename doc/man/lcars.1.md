@@ -120,7 +120,7 @@ Tools for examining system states and network resources:
 **inspect:headers** *url*
 :   Makes cURL requests and prints HTTP headers for the specified URL.
 
-**inspect:php:ext** *extension*
+**php:ext** *extension*
 :   Checks if specified PHP extensions are installed and available.
 
 **inspect:ssl:expiry** *domain*...

@@ -91,36 +91,6 @@ strip_lines() {
 }
 export -f strip_lines
 
-# Returns the path to the PHP binary.
-php:bin() {
-  local php_bin
-
-  if ! php_bin="$(command -v php)"; then
-    warn "PHP is not installed, or it is not in your PATH."
-    return 1
-  fi
-
-  # TODO try remi and others
-
-  echo "$php_bin"
-}
-export -f php:bin
-
-# Executes the given PHP command using the PHP binary.
-php:cli() {
-  local php_bin
-
-  php_bin="$(php:bin)"
-
-  if [[ -z "$php_bin" ]]; then
-    warn "PHP is not installed, or it is not in your PATH."
-    return 1
-  fi
-
-  "$php_bin" "$@"
-}
-export -f php:cli
-
 # Simple wrapper for `jq` with custom colors.
 #
 # $@ - jq arguments

@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
-# Usage: lcars inspect:php:ext <extension>
+# Usage: lcars php:ext <extension>
 # Summary: Checks if a PHP extension is installed
 #
 # NAME
-#   lcars inspect:php:ext -- check if a PHP extension is installed
+#   lcars php:ext -- check if a PHP extension is installed
 #
 # SYNOPSIS
 #   lcars-ig
 #
 # DESCRIPTION
-#   lcars inspect:php:ext checks if a PHP extension is installed. Exits 0 if the
+#   lcars php:ext checks if a PHP extension is installed. Exits 0 if the
 #   extension is installed, 1 if it is not.
 
 if [[ "$LCARS_DEBUG" ]]; then
@@ -28,7 +28,7 @@ set -e
 has_extension() {
   local extension="$1"
 
-  if php:cli -m | grep -- "^$extension$" &> /dev/null; then
+  if php -m | grep -- "^$extension$" &> /dev/null; then
     echo installed
   else
     echo missing
@@ -39,7 +39,7 @@ main() {
   local arg output=()
 
   if [[ $# -eq 0 ]]; then
-    php:cli -m | grep -v '^\[' | grep -v '^$' | sort | uniq
+    php -m | grep -v '^\[' | grep -v '^$' | sort | uniq
     return 0
   fi
 
