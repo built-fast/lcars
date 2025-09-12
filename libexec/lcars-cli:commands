@@ -24,7 +24,7 @@ fi
 set -euo pipefail
 
 main() {
-  local command_prefix="lcars-" PATH_remain path lcars_command
+  local path_prefix="lcars-" PATH_remain path lcars_command command_prefix="${1-}" command_name
 
   shopt -s nullglob
 
@@ -35,8 +35,11 @@ main() {
       path="${PATH_remain%%:*}"
 
       if [[ -n "$path" ]]; then
-        for lcars_command in "$path/$command_prefix"*; do
-          echo "${lcars_command##*/"$command_prefix"}"
+        for lcars_command in "$path/$path_prefix"*; do
+          command_name="${lcars_command##*/"$path_prefix"}"
+          if [[ "$command_name" == "$command_prefix"* ]] || [[ -z "$command_prefix" ]]; then
+            echo "$command_name"
+          fi
         done
       fi
 

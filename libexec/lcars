@@ -88,7 +88,21 @@ case "$command" in
     ;;
   *)
     command_path="$(command -v "lcars-$command" || true)"
+
+    # Check if we're calling a valid namespace that doesn't have a real
+    # command, i.e. `lcars app` when only `lcars app:*` exists.
     if [ ! -x "$command_path" ]; then
+      subcommands=$(lcars-commands "$command:" 2> /dev/null)
+
+      if [[ "$subcommands" ]]; then
+        echo "lcars: \`$command' is a namespace, not a command." >&2
+        echo >&2
+        echo "Try one of:" >&2
+        # shellcheck disable=SC2001
+        echo "$subcommands" | sed 's/^/  /' >&2
+        exit 1
+      fi
+
       echo "lcars: no such command \`$command'" >&2
       exit 1
     fi
