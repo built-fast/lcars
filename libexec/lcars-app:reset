@@ -44,7 +44,7 @@ php artisan view:clear
 php artisan cache:clear
 php artisan config:clear
 
-LOG_PATH="$(app:root)/storage/logs/laravel.log"
+LOG_PATH="$(lcars-app:root)/storage/logs/laravel.log"
 
 if [[ -f "$LOG_PATH" ]]; then
   echo > "$LOG_PATH"

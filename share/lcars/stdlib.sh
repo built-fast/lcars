@@ -91,21 +91,6 @@ strip_lines() {
 }
 export -f strip_lines
 
-# Checks if the given PHP extension is installed.
-#
-# $1 - Extension name
-php:has_extension() {
-  local extension="$1"
-
-  if ! php:cli -m | grep "$extension" &> /dev/null; then
-    warn "PHP extension '$extension' is not installed."
-    return 1
-  fi
-
-  return 0
-}
-export -f php:has_extension
-
 # Returns the path to the PHP binary.
 php:bin() {
   local php_bin

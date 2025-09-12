@@ -23,4 +23,4 @@ fi
 
 set -euo pipefail
 
-app:root
+"$(php:cli)" artisan tinker --execute "echo base_path() . PHP_EOL;"

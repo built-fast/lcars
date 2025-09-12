@@ -22,15 +22,44 @@ if [[ -z "$_LCARS_ROOT" ]]; then
   exit 1
 fi
 
-set -euo pipefail
+# set -euo pipefail
+set -e
 
-if [[ $# -ne 1 ]]; then
-  exec lcars-cli:help --flag -h inspect:php:ext
-fi
+has_extension() {
+  local extension="$1"
 
-if php:has_extension "$1" &> /dev/null; then
-  echo "$1 is installed"
-else
-  echo "$1 is missing"
-  exit 1
-fi
+  if php:cli -m | grep -- "^$extension$" &> /dev/null; then
+    echo installed
+  else
+    echo missing
+  fi
+}
+
+main() {
+  local arg output=()
+
+  if [[ $# -eq 0 ]]; then
+    php:cli -m | grep -v '^\[' | grep -v '^$' | sort | uniq
+    return 0
+  fi
+
+  for arg in "$@"; do
+    output+=("$(printf '%s\t%s' "$arg" "$(has_extension "$arg")")")
+  done
+
+  {
+    printf '%s\t%s\n' "Extension" "Installed"
+
+    for arg in "${output[@]}"; do
+      printf '%s\n' "$arg"
+    done
+  } | column -t -s $'\t'
+
+  if [[ ${output[*]} = *missing* ]]; then
+    return 1
+  else
+    return 0
+  fi
+}
+
+main "$@"
