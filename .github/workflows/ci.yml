@@ -22,6 +22,7 @@ jobs:
         run: |
           gh extension install built-fast/gh-shellcheck
           gh shellcheck
+          make test-man
 
       # - name: Run bats tests
       #   shell: 'script -q -e -c "bash {0}"'

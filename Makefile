@@ -11,11 +11,19 @@ help: ## show this help text
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 .PHONY: test
-test: test-shellcheck ## run full test suite
+test: test-shellcheck test-man ## run full test suite
 
 .PHONY: test-shellcheck
 test-shellcheck: ## run shellcheck
 	./bin/lcars test:shellcheck
+
+.PHONY: test-man
+test-man: ## check if man page is up to date
+	@$(MAKE) man > /dev/null 2>&1
+	@if ! git diff --quiet --exit-code share/man/man1/lcars.1; then \
+		echo "Error: man page is out of date. Run 'make man' to update it." >&2; \
+		exit 1; \
+	fi
 
 .PHONY: man
 man: share/man/man1/lcars.1 ## build man page
