@@ -23,4 +23,14 @@ fi
 
 set -euo pipefail
 
-hash:sha1 <<< "${1:-$(cat)}"
+sha1() {
+  if command -v sha1sum &> /dev/null; then
+    sha1sum | awk '{ print $1 }'
+  elif command -v shasum &> /dev/null; then
+    shasum -a 1 | awk '{ print $1 }'
+  else
+    abort "No sha1sum or shasum found"
+  fi
+}
+
+sha1 <<< "${1:-$(cat)}"

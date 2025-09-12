@@ -23,4 +23,4 @@ fi
 
 set -euo pipefail
 
-hash:random
+openssl rand -hex 32

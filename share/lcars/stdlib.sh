@@ -162,48 +162,6 @@ jq:array:random() {
 }
 export -f jq:array:random
 
-# Hashes the given file using sha256.
-hash:sha256() {
-  if command -v sha256sum &> /dev/null; then
-    sha256sum | awk '{ print $1 }'
-  elif command -v shasum &> /dev/null; then
-    shasum -a 256 | awk '{ print $1 }'
-  else
-    abort "No sha256sum or shasum found"
-  fi
-}
-export -f hash:sha256
-
-# Hashes the given file using md5.
-hash:md5() {
-  if command -v md5sum &> /dev/null; then
-    md5sum | awk '{ print $1 }'
-  elif command -v md5 &> /dev/null; then
-    md5 | awk '{ print $4 }'
-  else
-    abort "No md5sum or md5 found"
-  fi
-}
-export -f hash:md5
-
-# Hashes the given file using sha1.
-hash:sha1() {
-  if command -v sha1sum &> /dev/null; then
-    sha1sum | awk '{ print $1 }'
-  elif command -v shasum &> /dev/null; then
-    shasum -a 1 | awk '{ print $1 }'
-  else
-    abort "No sha1sum or shasum found"
-  fi
-}
-export -f hash:sha1
-
-# Generate a random hash.
-hash:random() {
-  openssl rand -hex 32
-}
-export -f hash:random
-
 # ASCII color codes
 color:codes() {
   local name="${1:-normal}"
