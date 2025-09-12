@@ -1,0 +1,167 @@
+#!/usr/bin/env php
+<?php
+/**
+ * Usage: lcars test:annotate:cl2pr < clover.xml
+ *        cat clover.xml | lcars test:annotate:cl2pr
+ * Summary: Convert Clover XML test results to GitHub Actions annotation format
+ *
+ * NAME
+ *   lcars test:annotate:cl2pr -- Convert Clover XML test results to GitHub
+ *                                Actions annotation format.
+ *
+ * SYNOPSIS
+ *   lcars test:annotate:cl2pr < clover.xml
+ *   cat clover.xml | lcars-test:annotate:cl2pr
+ *
+ * DESCRIPTION
+ *   lcars test:annotate:cl2pr converts Clover XML test results to GitHub
+ *   Actions annotation format. Reads XML data from stdin. You can use this
+ *   in your CI workflow to annotate pull requests with code coverage
+ *   information, eg:
+ *
+ *     - name: Clone LCARS
+ *       uses: actions/checkout@v5
+ *       with:
+ *         repository: built-fast/lcars
+ *
+ *     - name: Run tests with coverage
+ *       run: pest --coverage --coverage-clover=clover.xml
+ *
+ *     - name: Code Coverage Report
+ *       run: ./lcars/bin/lcars test:annotate:cl2pr < clover.xml >> "$GITHUB_STEP_SUMMARY"
+ */
+
+/**
+ * Get the total coverage percentage from the XML.
+ */
+function getTotal(SimpleXMLElement $xml): float
+{
+    $allLines = 0;
+    $coveredLines = 0;
+
+    foreach ($xml->xpath('//metrics') as $metric) {
+        $allLines += $metric['statements'];
+        $coveredLines += $metric['coveredstatements'];
+    }
+
+    return round($coveredLines / $allLines * 100, 2, PHP_ROUND_HALF_DOWN);
+}
+
+/**
+ * Get the files from the XML and return an array of files with their coverage
+ * information.
+ *
+ *
+ * @return list<array<string, int|string>>
+ */
+function getFiles(SimpleXMLElement $xml): array
+{
+    $files = [];
+
+    foreach ($xml->xpath('//file') as $file) {
+        $metrics = $file->metrics;
+
+        $relativePath = str_replace(getcwd().'/', '', (string) $file['name']);
+        $coveredMetrics = (int) $metrics['coveredstatements'];
+        $totalMetrics = (int) $metrics['statements'];
+
+        if ($totalMetrics === 0) {
+            $percentage = 0;
+        } else {
+            $percentage = round($coveredMetrics / $totalMetrics * 100);
+        }
+
+        $icon = match (true) {
+            $percentage < 50 => '🔴',
+            $percentage < 70 => '🟡',
+            default => '🟢',
+        };
+
+        $line = [
+            'name' => $relativePath,
+            'total' => $totalMetrics,
+            'covered' => $coveredMetrics,
+            'percentage' => "{$icon} {$percentage}%",
+        ];
+
+        $files[] = $line;
+    }
+
+    return $files;
+}
+
+/**
+ * Print a formatted, nicely spaced markdown table
+ *
+ * @param  list<array<int, int|string>>  $rows
+ */
+function markdownTable(array $rows): string
+{
+    $columns = array_map(null, ...$rows);
+
+    $lengths = array_map(function ($column) {
+        $cols = array_map(fn ($c) => mb_strlen((string) $c), $column);
+
+        if ($cols === []) {
+            return 0;
+        }
+
+        return max($cols);
+    }, $columns);
+
+    $formattedRows = array_map(function ($row) use ($lengths) {
+        return '| '.implode(' | ', array_map(function ($cell, $length) {
+            return mb_str_pad((string) $cell, $length);
+        }, $row, $lengths)).' |';
+    }, $rows);
+
+    $separator = '| '.implode(' | ', array_map(function ($length) {
+        return str_repeat('-', $length);
+    }, $lengths)).' |';
+
+    return implode("\n", [
+        $formattedRows[0],
+        $separator,
+        implode("\n", array_slice($formattedRows, 1)),
+    ]);
+}
+
+$content = stream_get_contents(STDIN);
+
+if (empty($content)) {
+    echo "No XML data provided on stdin\n";
+    exit(1);
+}
+$xml = new SimpleXMLElement($content);
+
+$files = getFiles($xml);
+
+$header = ['Coverage', 'Total Statements', 'Covered Statements', 'File'];
+
+$rows = [$header];
+
+foreach ($files as $file) {
+    $rows[] = [
+        $file['percentage'],
+        $file['total'],
+        $file['covered'],
+        $file['name'],
+    ];
+}
+
+$totalCoverage = getTotal($xml);
+
+echo "## Code Coverage Report\n";
+
+$calloutType = match (true) {
+    $totalCoverage < 50 => 'CAUTION',
+    $totalCoverage < 70 => 'WARNING',
+    default => 'NOTE',
+};
+
+echo "> [!{$calloutType}]\n";
+echo "> Code coverage is at **{$totalCoverage}**%\n\n";
+
+echo markdownTable($rows);
+
+echo "\n";

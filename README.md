@@ -116,6 +116,9 @@ COMMANDS
   inspect:php:ext     Checks if a PHP extension is installed
   inspect:ssl:expiry  Prints SSL expiration dates for domains
   test                Runs Pint, Pest, PHPStan, and ShellCheck tests
+  test:annotate:cl2pr Convert Clover XML test results to GitHub Actions annotations
+  test:annotate:cs2pr Convert Checkstyle XML test results to GitHub Actions annotations
+  test:annotate:ju2pr Convert JUnit XML test results to GitHub Actions annotations
   test:pest           Runs Pest test suite
   test:phpstan        Runs PHPStan on PHP files in the project
   test:pint           Runs Pint on PHP files in the project
