@@ -23,10 +23,37 @@ fi
 
 set -euo pipefail
 
+COMMAND_PREFIX="lcars-"
 
-main() {
+list_aliases() {
+  local PATH_remain path lcars_command
+
   shopt -s nullglob
 
+  {
+    PATH_remain="$PATH"
+
+    while true; do
+      path="${PATH_remain%%:*}"
+
+      if [[ -n "$path" ]]; then
+        for lcars_command in "$path/$COMMAND_PREFIX"*; do
+          if [[ -h "$lcars_command" ]]; then
+            echo "$lcars_command"
+          fi
+        done
+      fi
+
+      [[ $PATH_remain == *:* ]] || break
+
+      PATH_remain="${PATH_remain#*:}"
+    done
+  } | sort | uniq
+
+  shopt -u nullglob
+}
+
+main() {
   local file command target is_tty=no
 
   [[ -t 1 ]] && is_tty=yes
@@ -36,26 +63,20 @@ main() {
       printf "Command\\tTarget\\n"
     fi
 
-    for file in "$_LCARS_ROOT"/libexec/lcars-*; do
-      if [[ -h "$file" ]]; then
-        command="${file##*/lcars-}"
-        command="${command%%.*}"
+    while IFS= read -r file; do
+      target=$(readlink -f "$file")
+      target="${target##*/"$COMMAND_PREFIX"}"
+      command="${file##*/"$COMMAND_PREFIX"}"
 
-        target="$(readlink -f "$file")"
-        target="${target##*/lcars-}"
-
-        printf "%s\\t%s\\n" "$command" "$target"
-      fi
-    done | sort
+      printf "%s\\t%s\\n" "$command" "$target"
+    done < <(list_aliases) | sort
   } | column -t -s $'\t' | {
     if [[ "$is_tty" = yes ]]; then
-      sed "1s/.*/$(str:color "&" normal --bright --bold)/"
+      sed "1s/.*/$(str:color "&" blue --bold)/"
     else
       cat
     fi
   }
-
-  shopt -u nullglob
 }
 
 main "$@"
