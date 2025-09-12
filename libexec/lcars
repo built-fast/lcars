@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 # Usage: lcars <command>
+#        lcars help
+#        lcars commands
 #
 # NAME
 #   lcars -- Laravel CLI and Reusable Scripts
@@ -11,14 +13,17 @@
 #   LCARS contains CLI tools for working with Laravel projects.
 #
 # OPTIONS
+#   --root
+#       Print the root directory that LCARS is installed to and exit.
+#
+#   --version, -V
+#       Print the version number and exit.
+#
 #   -h
 #       Print short help and exit.
 #
 #   --help
 #       Print full help text and exit. Same as `lcars help`.
-#
-#   --root
-#       Print the root directory that LCARS is installed to and exit.
 
 if [[ "$LCARS_DEBUG" ]]; then
   export PS4='+ [${BASH_SOURCE[0]##*/}:${LINENO}${FUNCNAME[0]:+:${FUNCNAME[0]}()}] '
