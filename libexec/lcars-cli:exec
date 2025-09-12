@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# Usage: lcars cli:exec [--] <command> [<args>...]
+#
+# NAME
+#   lcars cli:exec -- Executes the given command line with the LCARS
+#                     environment loaded
+#
+# SYNOPSIS
+#   lcars cli:exec
+#
+# DESCRIPTION
+#   lcars cli:exec executes the given command line with the LCARS environment
+#   loaded. This is probably only useful if you are working on LCARS itself
+#   and or if you want to use the standard library in your own scripts. It's
+#   considered internal at the moment, so use at your own risk.
+#
+# EXAMPLES
+#
+#   lcars cli:exec -- bash -c 'echo $_LCARS_ROOT'
+#   lcars cli:exec -- bash -c 'str:color "Hi Josh" red'
+#   lcars cli:exec -- $(lcars --root)/contrib/lcars-fun:quote
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE[0]##*/}:${LINENO}${FUNCNAME[0]:+:${FUNCNAME[0]}()}] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+if [[ "${1:-}" == "--" ]]; then
+  shift 1
+fi
+
+if [[ $# -eq 0 ]]; then
+  echo "Error: No command specified."
+  exit 1
+fi
+
+exec -- "$@"
