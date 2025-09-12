@@ -60,6 +60,10 @@ export _LCARS_ROOT
 
 PATH="${libexec_path}:$PATH"
 
+_LCARS_IS_TTY=no
+[[ -t 1 ]] && _LCARS_IS_TTY=yes
+export _LCARS_IS_TTY
+
 # shellcheck disable=SC1091
 source "$_LCARS_ROOT/share/lcars/stdlib.sh"
 
