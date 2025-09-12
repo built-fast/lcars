@@ -245,17 +245,6 @@ str:color() {
 }
 export -f str:color
 
-# Print the application root
-app:root() {
-  php artisan tinker --execute "echo base_path() . PHP_EOL;"
-}
-export -f app:root
-
-app:environment() {
-  php artisan tinker --execute "echo app()->environment() . PHP_EOL;"
-}
-export -f app:environment
-
 # Checks if the given composer package is installed.
 composer:is_installed() {
   composer show "$@" >/dev/null 2>&1

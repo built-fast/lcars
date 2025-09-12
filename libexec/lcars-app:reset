@@ -26,7 +26,7 @@ fi
 
 set -euo pipefail
 
-if [[ "$(app:environment)" != "local" ]]; then
+if [[ "$(lcars-app:environment)" != "local" ]]; then
   echo "  $(color:on white bg-red) ERROR $(color:off) This command can only be run in the local environment."
   exit 1
 fi

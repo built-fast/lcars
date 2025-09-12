@@ -23,4 +23,4 @@ fi
 
 set -euo pipefail
 
-app:environment
+php artisan tinker --execute "echo app()->environment() . PHP_EOL;"
