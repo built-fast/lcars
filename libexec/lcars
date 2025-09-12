@@ -62,7 +62,7 @@ command="$1"
 
 case "$command" in
   "" | -h | --help)
-    exec lcars-cli:help
+    exec lcars-cli:help --flag "${command:---help}"
     ;;
   --root)
     # If `lcars --root` was called, print the directory this project is
