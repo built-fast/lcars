@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Usage: lcars cli:stdlib [--file]
+#
+# NAME
+#   lcars cli:stdlib -- Prints the path to or contents of the LCARS standard
+#                       library.
+#
+# SYNOPSIS
+#   lcars cli:stdlib
+#
+# DESCRIPTION
+#   lcars cli:stdlib prints the path to or contents of the LCARS standard
+#   library. With the `--file` option, it prints the path to the standard
+#   library file.
+#
+#   To view it in an editor, you can use:
+#     lcars cli:stdlib | vim -MR -
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE[0]##*/}:${LINENO}${FUNCNAME[0]:+:${FUNCNAME[0]}()}] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+if [[ "${1-}" == --file ]]; then
+  echo "$_LCARS_ROOT/share/lcars/stdlib.sh"
+else
+  cat "$_LCARS_ROOT/share/lcars/stdlib.sh"
+fi
