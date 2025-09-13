@@ -70,9 +70,9 @@ main() {
 
       printf "%s\\t%s\\n" "$command" "$target"
     done < <(list_aliases) | sort
-  } | column -t -s $'\t' | {
+  } | {
     if [[ "$is_tty" = yes ]]; then
-      sed "1s/.*/$(str:color "&" blue --bold)/"
+      lcars-util:tableize --tsv
     else
       cat
     fi

@@ -30,7 +30,7 @@ composer_outdated() {
 
   (cd "$(dirname "$composer_file")" && composer outdated --direct --format json) | jq -r '
     .installed[] | [
-      "Composer (Backend)",
+      "Composer (PHP)",
       "\(.name)",
       "\(.version | gsub("^v"; ""))",
       "\(.latest | gsub("^v"; ""))"
@@ -43,7 +43,7 @@ npm_outdated() {
 
   (cd "$(dirname "$npm_file")" && npm outdated --json) | jq -r '
     to_entries[] | [
-      "NPM (Frontend)",
+      "NPM (Node)",
       "\(.key)",
       "\(.value | .current)",
       "\(.value | .latest)"
@@ -68,7 +68,7 @@ print_entires() {
   [[ -t 1 ]] && is_tty=yes
 
   if [[ "$is_tty" = yes ]]; then
-    column -t -s $'\t' | sed "1s/.*/$(str:color "&" blue --bold)/"
+    lcars-util:tableize --tsv
   else
     cat
   fi

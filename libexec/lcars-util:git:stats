@@ -64,7 +64,7 @@ git log --pretty=format:"---%an <%ae>" --numstat "$@" | awk "
   }
 " | {
   if [[ -t 1 ]]; then
-    column -t -s $'\t' | sed "1s/.*/$(str:color "&" normal --bright --bold)/"
+    lcars-util:tableize --tsv
   else
     cat
   fi

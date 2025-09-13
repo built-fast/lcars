@@ -1,0 +1,188 @@
+#!/usr/bin/env bash
+# Usage: lcars util:tableize -COLUMNS [CELLS]
+#        lcars util:tableize -sSEPARATOR < file
+#
+# NAME
+#   lcars util:tableize -- generate UTF-8 box drawing tables
+#
+# SYNOPSIS
+#   lcars util:tableize -COLUMNS [CELLS]
+#   lcars util:tableize -sSEPARATOR < file
+#
+# DESCRIPTION
+#   lcars util:tableize helps generate tables using UTF-8 box drawing characters.
+#   Manually supply arguments and a column count to generate a table, or pass
+#   in a delimited file to convert to a table.
+#
+# OPTIONS
+#   -COLUMNS
+#       Number of columns to include in output.
+#
+#   -sSEPARATOR
+#       String used to separate columns in input files.
+#
+#   --csv
+#       Shortcut for `-s,` to parse CSV files. Note that this is a "dumb" CSV
+#       parser -- it won't work if your cells contain commas!
+#
+#   --tsv
+#       Shortcut for `-s$'\t'` to parse TSV files.
+#
+#   -h, --help
+#       Prints help text and exits.
+#
+# EXAMPLES
+#   Build a 4 column table from arguments:
+#     lcars util:tableize -4 \
+#       "Heading 1"  "Heading 2" "Heading 3" "Heading 4" \
+#       "Hi"         "There"     "From"      "UTF-8!" \
+#       "Everything" "Is"        "So"        "Nicely Aligned!"
+#
+#   Convert a CSV file into a table:
+#     lcars util:tableize -s, < some.csv
+#     lcars util:tableize --csv < some.csv
+#
+#   Convert a TSV file into a table:
+#     lcars util:tableize -s$'\t' < test.tsv
+#     lcars util:tableize --tsv < test.tsv
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE[0]##*/}:${LINENO}${FUNCNAME[0]:+:${FUNCNAME[0]}()}] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+# Returns the highest number in the given arguments
+#
+# $@ - one or more numeric arguments
+max() {
+  local max=0 arg
+
+  for arg; do
+    (( ${arg:-0} > max )) && max="$arg"
+  done
+
+  printf "%s" "$max"
+}
+
+# Formats a table using UTF-8 box drawing characters
+#
+# $1 - field separator string
+format_table() {
+  local fs="$1" buffer col current_col=0 current_row=0 min=3
+  local -a lengths=()
+
+  buffer="$(cat)"
+
+  # First pass to get column lengths
+  while read -r line; do
+    current_col=0
+
+    while read -r col; do
+      lengths["$current_col"]="$(max "${#col}" "${lengths[$current_col]:-0}")"
+
+      current_col=$((current_col + 1))
+    done <<< "${line//$fs/$'\n'}"
+  done <<< "$buffer"
+
+  # Second pass writes each row
+  while read -r line; do
+    current_col=0
+    current_row=$((current_row + 1))
+
+    # Print top border for first row
+    if [[ "$current_row" -eq 1 ]]; then
+      printf "┌"
+      for (( i=0; i < ${#lengths[@]}; i++ )); do
+        printf "%$(($(max "${lengths[$i]}" "$min") + 2))s" | tr " " "─"
+        if [[ $i -lt $((${#lengths[@]} - 1)) ]]; then
+          printf "┬"
+        fi
+      done
+      printf "┐\n"
+    fi
+
+    # Print row data
+    printf "│"
+    while read -r col; do
+      printf " %-$(max "${lengths[$current_col]}" "$min")s │" "$col"
+
+      current_col=$((current_col + 1))
+    done <<< "${line//$fs/$'\n'}"
+
+    printf "\n"
+
+    # If this is the first row, print the header separator
+    if [[ "$current_row" -eq 1 ]]; then
+      printf "├"
+      for (( i=0; i < ${#lengths[@]}; i++ )); do
+        printf "%$(($(max "${lengths[$i]}" "$min") + 2))s" | tr " " "─"
+        if [[ $i -lt $((${#lengths[@]} - 1)) ]]; then
+          printf "┼"
+        fi
+      done
+      printf "┤\n"
+    fi
+  done <<< "$buffer"
+
+  # Print bottom border
+  printf "└"
+  for (( i=0; i < ${#lengths[@]}; i++ )); do
+    printf "%$(($(max "${lengths[$i]}" "$min") + 2))s" | tr " " "─"
+    if [[ $i -lt $((${#lengths[@]} - 1)) ]]; then
+      printf "┴"
+    fi
+  done
+  printf "┘\n"
+}
+
+# Main program
+main() {
+  local arg cols i fs="##$$FS##"
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -[0-9]*) cols="${1:1}"; shift ;;
+      -s*) fs="${1:2}"; shift ;;
+      --csv) fs=","; shift ;;
+      --tsv) fs=$'\t'; shift ;;
+      --) shift; break ;;
+      -*) warn "Invalid option '$1'"; return 1 ;;
+      *) break ;;
+    esac
+  done
+
+  if [[ -z "$fs" ]]; then
+    warn "Field separator can't be blank!"
+    return 1
+  elif [[ $# -gt 0 ]] && ! [[ "$cols" =~ ^[0-9]+$ ]]; then
+    warn "Missing or Invalid column count!"
+    return 1
+  fi
+
+  { if [[ $# -gt 0 ]]; then
+      while [[ $# -gt 0 ]]; do
+        for (( i=0; i < cols; i++ )); do
+          if (( i + 1 == cols )); then
+            printf "%s" "$1"
+          else
+            printf "%s%s" "$1" "$fs"
+          fi
+          shift
+        done
+
+        printf "\n"
+      done
+    else
+      cat
+    fi
+  } | format_table "$fs"
+}
+
+main "$@"
