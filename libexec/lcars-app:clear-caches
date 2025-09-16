@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# Usage: lcars app:clear-caches
+# Summary: It does something
+#
+# NAME
+#   lcars app:clear-caches -- It does something
+#
+# SYNOPSIS
+#   lcars app:clear-caches
+#
+# DESCRIPTION
+#   lcars app:clear-caches does something, alright. Good or bad, who knows?
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE[0]##*/}:${LINENO}${FUNCNAME[0]:+:${FUNCNAME[0]}()}] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+echo "Clearing caches..."
+
+echo "  - Clearing view cache..."
+php artisan view:clear
+
+echo "  - Clearing horizon..."
+php artisan horizon:clear
+php artisan horizon:clear-metrics
+
+echo "  - Clearing cache..."
+php artisan cache:clear
+
+echo "  - Clearing config cache..."
+php artisan config:clear
+
+echo "  - Clearing route cache..."
+php artisan route:clear
+
+echo "  - Clearing compiled classes..."
+php artisan clear-compiled
+
+echo "  - Clearing event cache..."
+php artisan event:clear
+
+echo "  - Clearing scheduled tasks cache..."
+php artisan schedule:clear-cache
+
+echo "  - Clearing optimized files..."
+php artisan optimize:clear
