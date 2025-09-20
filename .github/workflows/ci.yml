@@ -14,15 +14,26 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - name: Run shellcheck
+      - name: Install gh-shellcheck
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh extension install built-fast/gh-shellcheck
+
+      - name: Run ShellCheck
+        run: |
           gh shellcheck
-          make test-man
+
+      - name: Install shfmt
+        run: |
+          sudo rm -f /var/lib/man-db/auto-update
+          sudo apt-get install -y shfmt
+
+      - name: Run shfmt
+        run: |
+          ./bin/lcars test:shfmt contrib libexec share
 
       # - name: Run bats tests
       #   shell: 'script -q -e -c "bash {0}"'
