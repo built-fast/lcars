@@ -2,23 +2,24 @@
 # Usage: lcars test:shellcheck [options] [-- path ...]
 # Summary: Runs ShellCheck on all Bash files in the project
 #
-# NAME
-#   lcars test:shellcheck -- Run ShellCheck on all Bash files in the project
-#
 # SYNOPSIS
 #   lcars test:shellcheck [options]
 #   lcars test:shellcheck [options] -- path [path ...]
 #   lcars test:shellcheck [options] -- :path [path :path ...]
 #
+# OPTIONS
+#   -l, --list-files                         # List files that would be checked
+#
 # EXAMPLES
 #   lcars test:shellcheck                            # Check all bash files
+#   lcars test:shellcheck -l                         # List all bash files that would be checked
 #   lcars test:shellcheck -- scripts/                # Check only files in scripts/
+#   lcars test:shellcheck -l -- scripts/             # List files in scripts/ that would be checked
 #   lcars test:shellcheck -- :tests/                 # Exclude files in tests/
 #   lcars test:shellcheck -- scripts/ :scripts/old/  # Include scripts/, exclude scripts/old/
 #
-# DESCRIPTION
-#   lcars test:shellcheck runs ShellCheck on all Bash files in the project.
-
+# NAME
+#   lcars test:shellcheck -- Run shellcheck on bash files in a git repository
 if [[ "$LCARS_DEBUG" ]]; then
   export PS4='+ [${BASH_SOURCE[0]##*/}:${LINENO}${FUNCNAME[0]:+:${FUNCNAME[0]}()}] '
   set -x
@@ -81,7 +82,7 @@ find_bash_files() {
     grep_args+=(--untracked)
   fi
 
-  grep_args+=(-l -E -e '^#!/bin/(ba)?sh' -e '^#!/usr/bin/env (ba)?sh$')
+  grep_args+=(-l -E -e '^#!/bin/(ba)?sh' -e '^#!/usr/bin/env (ba)?sh$' -e '# *shellcheck shell=(ba)?sh)$')
 
   {
     git ls-files '**.sh' '**.bash' '**.bats' 2>/dev/null
@@ -115,14 +116,64 @@ format() {
   esac
 }
 
+# Find files to check based on arguments and filters
+find_files() {
+  local untracked="$1" discovered_files=() include_paths=() all_files=() final_files=() path
+  shift
+
+  while IFS= read -r file; do
+    discovered_files+=("$file")
+  done < <(find_bash_files "$untracked")
+
+  if [[ "$#" -gt 0 ]]; then
+    for path in "$@"; do
+      [[ "${path: -1:1}" = "/" ]] && path="${path%/}"
+      if [[ "${path:0:1}" != ":" ]]; then
+        include_paths+=("$path")
+      fi
+    done
+
+    for path in "${include_paths[@]}"; do
+      if [[ -f "$path" ]]; then
+        discovered_files+=("$path")
+      fi
+    done
+  fi
+
+  while IFS= read -r file; do
+    all_files+=("$file")
+  done < <(printf '%s\n' "${discovered_files[@]}" | sort -u)
+
+  for file in "${all_files[@]}"; do
+    if [[ "$#" -eq 0 ]] || should_include_file "$file" "$@"; then
+      final_files+=("$file")
+    fi
+  done
+
+  printf '%s\n' "${final_files[@]}" | sort -u
+}
+
 # Main program
 main() {
-  local bash_files=() args=() fmt=default color=auto untracked=0
+  local bash_files=() args=() fmt=default color=auto untracked=0 list_files=0
 
   while [[ "$#" -gt 0 ]]; do
     case "$1" in
+      -V|--version)
+        echo "gh-shellcheck"
+        echo "version: 0.1.0"
+        echo "license: MIT"
+        echo "website: https://github.com/built-fast/gh-shellcheck"
+        echo
+        shellcheck --version
+        return 0
+        ;;
       --untracked)
         untracked=1
+        shift
+        ;;
+      -l|--list-files)
+        list_files=1
         shift
         ;;
       -f|--format=*)
@@ -156,10 +207,6 @@ main() {
 
         shift
         ;;
-      -h|--help)
-        print_help "$1"
-        return 0
-        ;;
       --)
         shift
         break
@@ -177,10 +224,13 @@ main() {
   fi
 
   while IFS= read -r file; do
-    if [[ "$#" -eq 0 ]] || should_include_file "$file" "$@"; then
-      bash_files+=("$file")
-    fi
-  done < <(find_bash_files "$untracked")
+    bash_files+=("$file")
+  done < <(find_files "$untracked" "$@")
+
+  if [[ "$list_files" -eq 1 ]]; then
+    printf '%s\n' "${bash_files[@]}"
+    return 0
+  fi
 
   if [[ ${#bash_files[@]} -eq 0 ]]; then
     if git rev-parse --is-inside-work-tree &>/dev/null; then
