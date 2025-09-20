@@ -45,6 +45,9 @@ Laravel application integration for development and deployment tasks:
 **app:artisan** [*command*] [*arguments*...]
 :   Interactive Laravel Artisan command launcher with fuzzy search. When called without arguments, presents a searchable list of all available Artisan commands. Use arrow keys to navigate, type to filter, press '?' for help preview, and Enter to execute.
 
+**app:clear-caches**
+:   Clears all Laravel caches including view, config, route, event, and optimized files. This command runs multiple Laravel Artisan cache clearing commands to ensure a complete cache reset.
+
 **app:console**
 :   Opens the Laravel Tinker REPL console for interactive PHP evaluation.
 

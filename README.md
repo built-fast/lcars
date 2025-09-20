@@ -92,6 +92,7 @@ OPTIONS
 
 COMMANDS
   app:artisan         Interactive Laravel Artisan command launcher with fuzzy search
+  app:clear-caches    Clears all Laravel caches
   app:console         Opens the Tinker console
   app:decrypt         Decrypts input data using Laravel's encryption service
   app:deps:outdated   Show outdated dependencies for the current app

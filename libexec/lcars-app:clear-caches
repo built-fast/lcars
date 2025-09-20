@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
 # Usage: lcars app:clear-caches
-# Summary: It does something
+# Summary: Clears all Laravel caches
 #
 # NAME
-#   lcars app:clear-caches -- It does something
+#   lcars app:clear-caches -- Clears all Laravel caches
 #
 # SYNOPSIS
 #   lcars app:clear-caches
 #
 # DESCRIPTION
-#   lcars app:clear-caches does something, alright. Good or bad, who knows?
+#   lcars app:clear-caches clears all Laravel caches including view, config,
+#   route, event, and optimized files.
 
 if [[ "$LCARS_DEBUG" ]]; then
   export PS4='+ [${BASH_SOURCE[0]##*/}:${LINENO}${FUNCNAME[0]:+:${FUNCNAME[0]}()}] '
