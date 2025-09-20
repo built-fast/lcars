@@ -32,7 +32,7 @@ fi
 
 set -e
 
-export LCARS_VERSION="0.2.0"
+export LCARS_VERSION="0.2.3"
 
 resolve_link() {
   $(type -p greadlink readlink | head -1) "$1"
