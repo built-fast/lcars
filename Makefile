@@ -17,6 +17,10 @@ test: test-shellcheck test-man ## run full test suite
 test-shellcheck: ## run shellcheck
 	./bin/lcars test:shellcheck
 
+.PHONY: test-shfmt
+test-shfmt: ## run shfmt
+	./bin/lcars test:shfmt contrib libexec share
+
 .PHONY: test-man
 test-man: ## check if man page is up to date
 	@$(MAKE) man > /dev/null 2>&1
@@ -50,3 +54,7 @@ archive: ## create a zip archive of the current version
 release: ## create a new tag and push to GitHub
 	git tag -m "$(VERSION)" $(VERSION)
 	git push --tags
+
+.PHONY: format
+format: ## format all shell scripts
+	shfmt -w -i 2 -sr -ci libexec share contrib
