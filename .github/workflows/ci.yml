@@ -33,7 +33,6 @@ jobs:
 
       - name: Run shfmt
         run: |
-          ./script/test scripts:shfmt
           ./bin/lcars test:shfmt contrib libexec share
 
       # - name: Run bats tests
