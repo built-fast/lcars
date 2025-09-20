@@ -60,23 +60,24 @@ PHPSTAN_LEVEL="7"
 KEEP_SAIL=false
 
 # Parse command line arguments
-argv=$(getopt \
-  --name "lcars ${0##*/lcars-}" \
-  --options d:t: \
-  --longoptions database:,test-framework:,pint-mode:,phpstan-level:,sail \
-  -- \
-  "$@"
+argv=$(
+  getopt \
+    --name "lcars ${0##*/lcars-}" \
+    --options d:t: \
+    --longoptions database:,test-framework:,pint-mode:,phpstan-level:,sail \
+    -- \
+    "$@"
 ) || exit $?
 
 eval set -- "$argv"
 
 while [[ $# -gt 0 ]]; do
   case $1 in
-    -d|--database)
+    -d | --database)
       DATABASE="$2"
       shift 2
       ;;
-    -t|--test-framework)
+    -t | --test-framework)
       TEST_FRAMEWORK="$2"
       shift 2
       ;;
@@ -112,8 +113,7 @@ APP_NAME="$1"
 
 # Validate database option
 case "$DATABASE" in
-  sqlite|mysql|mariadb|pgsql|sqlsrv)
-    ;;
+  sqlite | mysql | mariadb | pgsql | sqlsrv) ;;
   *)
     echo "Error: Invalid database type '$DATABASE'"
     echo "Valid options: sqlite, mysql, mariadb, pgsql, sqlsrv"
@@ -123,8 +123,7 @@ esac
 
 # Validate test framework option
 case "$TEST_FRAMEWORK" in
-  pest|phpunit)
-    ;;
+  pest | phpunit) ;;
   *)
     echo "Error: Invalid test framework '$TEST_FRAMEWORK'"
     echo "Valid options: pest, phpunit"
@@ -134,8 +133,7 @@ esac
 
 # Validate pint mode option
 case "$PINT_MODE" in
-  standard|strict)
-    ;;
+  standard | strict) ;;
   *)
     echo "Error: Invalid pint mode '$PINT_MODE'"
     echo "Valid options: standard, strict"
@@ -145,8 +143,7 @@ esac
 
 # Validate phpstan level option
 case "$PHPSTAN_LEVEL" in
-  0|1|2|3|4|5|6|7|8|9)
-    ;;
+  0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9) ;;
   *)
     echo "Error: Invalid PHPStan level '$PHPSTAN_LEVEL'"
     echo "Valid options: 0-9"

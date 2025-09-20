@@ -34,11 +34,12 @@ check_cert() {
     domain="${domain%%:*}"
   fi
 
-  expiry=$(echo | openssl s_client \
-    -servername "$domain" \
-    -connect "$domain:$port" 2>/dev/null |
-    openssl x509 -noout -enddate |
-    sed 's/.*=//'
+  expiry=$(
+    echo | openssl s_client \
+      -servername "$domain" \
+      -connect "$domain:$port" 2> /dev/null |
+      openssl x509 -noout -enddate |
+      sed 's/.*=//'
   )
 
   jq -Rn \

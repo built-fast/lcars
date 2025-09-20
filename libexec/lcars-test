@@ -53,7 +53,7 @@ run_phpstan() {
 }
 
 run_shellcheck() {
-  if ! type shellcheck &>/dev/null; then
+  if ! type shellcheck &> /dev/null; then
     warn "shellcheck is not installed"
     return 1
   fi
@@ -77,7 +77,7 @@ main() {
       shift
       run_pest "$@"
       ;;
-    types|phpstan)
+    types | phpstan)
       shift
       run_phpstan "$@"
       ;;

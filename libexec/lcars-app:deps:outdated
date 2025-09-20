@@ -77,7 +77,8 @@ print_entires() {
 main() {
   local file
 
-  { for file in "$@"; do
+  {
+    for file in "$@"; do
       if [[ ! -f "$file" ]]; then
         continue
       fi

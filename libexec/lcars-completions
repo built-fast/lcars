@@ -38,7 +38,7 @@ COMMAND_PATH="$(type -P "lcars-$COMMAND" | head -n1)"
 # --help is provided automatically
 echo --help
 
-if grep -iE "^([#%]|--|//) provide lcars completions" "$COMMAND_PATH" &>/dev/null; then
+if grep -iE "^([#%]|--|//) provide lcars completions" "$COMMAND_PATH" &> /dev/null; then
   shift
   exec "$COMMAND_PATH" --complete "$@"
 fi

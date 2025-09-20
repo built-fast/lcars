@@ -38,7 +38,7 @@ list_aliases() {
 
       if [[ -n "$path" ]]; then
         for lcars_command in "$path/$COMMAND_PREFIX"*; do
-          if [[ -h "$lcars_command" ]]; then
+          if [[ -L "$lcars_command" ]]; then
             echo "$lcars_command"
           fi
         done

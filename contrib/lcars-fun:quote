@@ -31,7 +31,7 @@ list() {
 }
 
 quotes_inspiring() {
-cat <<'EOF'
+  cat << 'EOF'
 [
   "Act only according to that maxim whereby you can, at the same time, will that it should become a universal law. - Immanuel Kant",
   "An unexamined life is not worth living. - Socrates",
@@ -78,7 +78,7 @@ EOF
 }
 
 quotes_ds9() {
-cat <<'EOF'
+  cat << 'EOF'
 [
   "Once you have their money, you never give it back. - Rule of Acquisition 1",
   "Never spend more for an acquisition than you have to. - Rule of Acquisition 3",
@@ -171,7 +171,7 @@ EOF
 }
 
 quotes_jack_handy() {
-cat <<'EOF'
+  cat << 'EOF'
 [
   "To me, it's always a good idea to always carry two sacks of something when you walk around. That way, if anybody says, \"Hey, can you give me a hand?,\" you can say, \"Sorry, got these sacks.\" - Deep Thoughts by Jack Handy",
   "If I ever get real rich, I hope I'm not real mean to poor people, like I am now. - Deep Thoughts by Jack Handy",

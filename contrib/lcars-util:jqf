@@ -51,7 +51,7 @@ if [[ ! -f "$input" ]]; then
   echo "File not found: $input"
   exit 1
 fi
-  # --preview "jq -C {q}" \
+# --preview "jq -C {q}" \
 
 # shellcheck disable=SC2016
 "$0" --paths < "$input" | fzf \

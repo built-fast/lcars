@@ -65,7 +65,7 @@ max() {
   local max=0 arg
 
   for arg; do
-    (( ${arg:-0} > max )) && max="$arg"
+    ((${arg:-0} > max)) && max="$arg"
   done
 
   printf "%s" "$max"
@@ -99,7 +99,7 @@ format_table() {
     # Print top border for first row
     if [[ "$current_row" -eq 1 ]]; then
       printf "┌"
-      for (( i=0; i < ${#lengths[@]}; i++ )); do
+      for ((i = 0; i < ${#lengths[@]}; i++)); do
         printf "%$(($(max "${lengths[$i]}" "$min") + 2))s" | tr " " "─"
         if [[ $i -lt $((${#lengths[@]} - 1)) ]]; then
           printf "┬"
@@ -121,7 +121,7 @@ format_table() {
     # If this is the first row, print the header separator
     if [[ "$current_row" -eq 1 ]]; then
       printf "├"
-      for (( i=0; i < ${#lengths[@]}; i++ )); do
+      for ((i = 0; i < ${#lengths[@]}; i++)); do
         printf "%$(($(max "${lengths[$i]}" "$min") + 2))s" | tr " " "─"
         if [[ $i -lt $((${#lengths[@]} - 1)) ]]; then
           printf "┼"
@@ -133,7 +133,7 @@ format_table() {
 
   # Print bottom border
   printf "└"
-  for (( i=0; i < ${#lengths[@]}; i++ )); do
+  for ((i = 0; i < ${#lengths[@]}; i++)); do
     printf "%$(($(max "${lengths[$i]}" "$min") + 2))s" | tr " " "─"
     if [[ $i -lt $((${#lengths[@]} - 1)) ]]; then
       printf "┴"
@@ -148,12 +148,30 @@ main() {
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      -[0-9]*) cols="${1:1}"; shift ;;
-      -s*) fs="${1:2}"; shift ;;
-      --csv) fs=","; shift ;;
-      --tsv) fs=$'\t'; shift ;;
-      --) shift; break ;;
-      -*) warn "Invalid option '$1'"; return 1 ;;
+      -[0-9]*)
+        cols="${1:1}"
+        shift
+        ;;
+      -s*)
+        fs="${1:2}"
+        shift
+        ;;
+      --csv)
+        fs=","
+        shift
+        ;;
+      --tsv)
+        fs=$'\t'
+        shift
+        ;;
+      --)
+        shift
+        break
+        ;;
+      -*)
+        warn "Invalid option '$1'"
+        return 1
+        ;;
       *) break ;;
     esac
   done
@@ -166,10 +184,11 @@ main() {
     return 1
   fi
 
-  { if [[ $# -gt 0 ]]; then
+  {
+    if [[ $# -gt 0 ]]; then
       while [[ $# -gt 0 ]]; do
-        for (( i=0; i < cols; i++ )); do
-          if (( i + 1 == cols )); then
+        for ((i = 0; i < cols; i++)); do
+          if ((i + 1 == cols)); then
             printf "%s" "$1"
           else
             printf "%s%s" "$1" "$fs"

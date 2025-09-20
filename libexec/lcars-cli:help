@@ -135,7 +135,7 @@ truncate() {
   local string="$2"
 
   if [[ "${ansi:-}" ]] && [[ "${#string}" -gt "$max_length" ]]; then
-    local length=$(( max_length - 3 ))
+    local length=$((max_length - 3))
     echo "${string:0:$length}..."
   else
     echo "$string"
@@ -154,7 +154,7 @@ print_summaries() {
 
     file="$(command_path "$command")"
 
-    if [[ ! -h "$file" ]]; then
+    if [[ ! -L "$file" ]]; then
       local summary="" usage="" help=""
 
       eval "$(documentation_for "$file")"
@@ -172,9 +172,9 @@ print_summaries() {
 
   read -r _ columns < <(stty size)
 
-  summary_length=$(( columns - longest_command - 4 ))
+  summary_length=$((columns - longest_command - 4))
 
-  for (( index=0; index < ${#commands[@]}; index++ )); do
+  for ((index = 0; index < ${#commands[@]}; index++)); do
     printf "  %-${longest_command}s  %s\\n" "${commands[$index]}" \
       "$(truncate "${summary_length}" "${summaries[$index]}")"
   done
@@ -191,7 +191,8 @@ print_aliases() {
 
 # Formats STDIN for final output.
 format() {
-  { if [[ "${ansi:-}" ]]; then
+  {
+    if [[ "${ansi:-}" ]]; then
       sed -E "s/^([A-Z0-9][A-Z0-9 ]+)\$/$(color:on bold)\\1$(color:off)/"
     else
       cat
@@ -376,31 +377,53 @@ completions() {
 main() {
   local argv field file summaries action=show_help
 
-  argv=$(getopt \
-    --name "lcars ${0##*/lcars-}" \
-    --options e:f:u \
-    --longoptions exit:,flag:,usage,complete-commands,complete \
-    -- \
-    "$@"
+  argv=$(
+    getopt \
+      --name "lcars ${0##*/lcars-}" \
+      --options e:f:u \
+      --longoptions exit:,flag:,usage,complete-commands,complete \
+      -- \
+      "$@"
   ) || return $?
 
   eval "set -- $argv"
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      -e | --exit) exit_code="$2"; shift 2;;
+      -e | --exit)
+        exit_code="$2"
+        shift 2
+        ;;
       -f | --flag)
         case "$2" in
-          -h) field=usage; shift 2;;
-          --help) field=all; shift 2;;
-          *) abort "invalid flag '$2'";;
+          -h)
+            field=usage
+            shift 2
+            ;;
+          --help)
+            field=all
+            shift 2
+            ;;
+          *) abort "invalid flag '$2'" ;;
         esac
         ;;
-      -u | --usage) field=usage; shift;;
-      --complete-commands) action=complete_commands; shift ;;
-      --complete) action=complete; shift;;
-      --) shift; break;;
-      *) break;;
+      -u | --usage)
+        field=usage
+        shift
+        ;;
+      --complete-commands)
+        action=complete_commands
+        shift
+        ;;
+      --complete)
+        action=complete
+        shift
+        ;;
+      --)
+        shift
+        break
+        ;;
+      *) break ;;
     esac
   done
 

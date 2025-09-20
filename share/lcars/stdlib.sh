@@ -110,31 +110,31 @@ color:codes() {
   local name="${1:-normal}"
 
   case "$name" in
-    normal)    echo 0 ;;
-    bold)      echo 1 ;;
-    dim)       echo 2 ;;
-    italic)    echo 3 ;;
+    normal) echo 0 ;;
+    bold) echo 1 ;;
+    dim) echo 2 ;;
+    italic) echo 3 ;;
     underline) echo 4 ;;
-    invert)    echo 7 ;;
-    black)     echo 30 ;;
-    red)       echo 31 ;;
-    green)     echo 32 ;;
-    yellow)    echo 33 ;;
-    blue)      echo 34 ;;
-    magenta)   echo 35 ;;
-    cyan)      echo 36 ;;
-    white)     echo 37 ;;
+    invert) echo 7 ;;
+    black) echo 30 ;;
+    red) echo 31 ;;
+    green) echo 32 ;;
+    yellow) echo 33 ;;
+    blue) echo 34 ;;
+    magenta) echo 35 ;;
+    cyan) echo 36 ;;
+    white) echo 37 ;;
 
-    bg-black)   echo 40 ;;
-    bg-red)     echo 41 ;;
-    bg-green)   echo 42 ;;
-    bg-yellow)  echo 43 ;;
-    bg-blue)    echo 44 ;;
+    bg-black) echo 40 ;;
+    bg-red) echo 41 ;;
+    bg-green) echo 42 ;;
+    bg-yellow) echo 43 ;;
+    bg-blue) echo 44 ;;
     bg-magenta) echo 45 ;;
-    bg-cyan)    echo 46 ;;
-    bg-white)   echo 47 ;;
+    bg-cyan) echo 46 ;;
+    bg-white) echo 47 ;;
 
-    *) echo "Invalid color name: $name" >&2  && return 1 ;;
+    *) echo "Invalid color name: $name" >&2 && return 1 ;;
   esac
 }
 export -f color:codes
@@ -176,19 +176,26 @@ color:on() {
   for arg in "$@"; do
     case "$arg" in
       --bold)
-        spec="$spec;$(color:codes bold)" ;;
+        spec="$spec;$(color:codes bold)"
+        ;;
       --dim)
-        spec="$spec;$(color:codes dim)" ;;
+        spec="$spec;$(color:codes dim)"
+        ;;
       --italic)
-        spec="$spec;$(color:codes italic)" ;;
+        spec="$spec;$(color:codes italic)"
+        ;;
       --invert)
-        spec="$spec;$(color:codes invert)" ;;
+        spec="$spec;$(color:codes invert)"
+        ;;
       --underline)
-        spec="$spec;$(color:codes underline)" ;;
+        spec="$spec;$(color:codes underline)"
+        ;;
       --bright)
-        code=$((code + 60)) ;;
+        code=$((code + 60))
+        ;;
       bg-*)
-        bg_spec="$bg_spec;$(color:codes "$arg")" ;;
+        bg_spec="$bg_spec;$(color:codes "$arg")"
+        ;;
     esac
   done
 
@@ -217,6 +224,6 @@ export -f str:color
 
 # Checks if the given composer package is installed.
 composer:is_installed() {
-  composer show "$@" >/dev/null 2>&1
+  composer show "$@" > /dev/null 2>&1
 }
 export -f composer:is_installed

@@ -20,7 +20,7 @@ fi
 set -euo pipefail
 
 calendar_data() {
-cat <<'EOF'
+  cat << 'EOF'
 01/01	J.D. Salinger born, 1919
 01/01	Paul Revere born in Boston, 1735
 01/02	Isaac Asimov born in Petrovichi, Russian SFSR, 1920

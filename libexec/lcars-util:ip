@@ -39,7 +39,8 @@ main() {
       ;;
   esac
 
-  { if [ "${ip_version:-4}" = "4" ]; then
+  {
+    if [ "${ip_version:-4}" = "4" ]; then
       dig -4 ch txt whoami.cloudflare +short @1.1.1.1
     else
       dig -6 ch txt whoami.cloudflare +short @2606:4700:4700::1111

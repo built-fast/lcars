@@ -31,5 +31,5 @@ fi
 
 key="$1"
 
-jq --arg k "$key" -r  '.[$k]' \ "$LCARS_CONFIG" 2> /dev/null ||
+jq --arg k "$key" -r '.[$k]' \ "$LCARS_CONFIG" 2> /dev/null ||
   abort "Failed to read config file."

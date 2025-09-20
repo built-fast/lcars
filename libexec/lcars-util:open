@@ -29,20 +29,20 @@ fi
 set -euo pipefail
 
 # WSL 1 or 2
-if command -v xdg-open >/dev/null 2>&1; then
+if command -v xdg-open > /dev/null 2>&1; then
   xdg-open "$@"
-elif command -v termux-open >/dev/null 2>&1; then
+elif command -v termux-open > /dev/null 2>&1; then
   termux-open "$@"
 elif [[ $OSTYPE == darwin* ]]; then
   command open "$@"
 elif [[ $OSTYPE == cygwin* ]]; then
-  if command -v cygstart >/dev/null 2>&1; then
+  if command -v cygstart > /dev/null 2>&1; then
     cygstart "$@"
   else
     start "$@"
   fi
 elif [[ $OSTYPE == linux* && -r /proc/version &&
-    $(< /proc/version) == *[Mm]icrosoft* ]]; then
+  $(< /proc/version) == *[Mm]icrosoft* ]]; then
   explorer.exe "$@"
 elif [[ $OSTYPE == msys ]]; then
   explorer.exe "$(cygpath -w "$@")"

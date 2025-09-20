@@ -85,7 +85,7 @@ find_bash_files() {
   grep_args+=(-l -E -e '^#!/bin/(ba)?sh' -e '^#!/usr/bin/env (ba)?sh$' -e '# *shellcheck shell=(ba)?sh)$')
 
   {
-    git ls-files '**.sh' '**.bash' '**.bats' 2>/dev/null
+    git ls-files '**.sh' '**.bash' '**.bats' 2> /dev/null
 
     git grep "${grep_args[@]}"
   } | sort | uniq
@@ -159,7 +159,7 @@ main() {
 
   while [[ "$#" -gt 0 ]]; do
     case "$1" in
-      -V|--version)
+      -V | --version)
         echo "gh-shellcheck"
         echo "version: 0.1.0"
         echo "license: MIT"
@@ -172,11 +172,11 @@ main() {
         untracked=1
         shift
         ;;
-      -l|--list-files)
+      -l | --list-files)
         list_files=1
         shift
         ;;
-      -f|--format=*)
+      -f | --format=*)
         if [[ "$1" = --format=github ]]; then
           args+=(-f json)
           fmt=github
@@ -198,7 +198,7 @@ main() {
           shift 2
         fi
         ;;
-      -C*|--color=*)
+      -C* | --color=*)
         if [[ "$1" = --color=* ]]; then
           color="${1#--color=}"
         else
@@ -233,7 +233,7 @@ main() {
   fi
 
   if [[ ${#bash_files[@]} -eq 0 ]]; then
-    if git rev-parse --is-inside-work-tree &>/dev/null; then
+    if git rev-parse --is-inside-work-tree &> /dev/null; then
       echo "No Bash files found in the current git repo" >&2
       exit 0
     else
@@ -242,12 +242,12 @@ main() {
     fi
   fi
 
-  if ! type shellcheck &>/dev/null; then
+  if ! type shellcheck &> /dev/null; then
     echo "shellcheck is not installed" >&2
     exit 1
   fi
 
-  if ! type jq &>/dev/null; then
+  if ! type jq &> /dev/null; then
     echo "jq is not installed" >&2
     exit 1
   fi
