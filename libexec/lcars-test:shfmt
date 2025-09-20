@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Usage: lcars test:shfmt <files...>
+# Summary: Check shell script formatting with shfmt
+#
+# NAME
+#   lcars test:shfmt -- Check shell script formatting with shfmt
+#
+# SYNOPSIS
+#   lcars test:shfmt
+#
+# DESCRIPTION
+#   lcars test:shfmt checks the formatting of shell scripts in the project
+#   using shfmt. It ensures that the scripts adhere to a consistent style.
+#   If any formatting issues are found, they will be reported.
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE[0]##*/}:${LINENO}${FUNCNAME[0]:+:${FUNCNAME[0]}()}] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+if ! type shfmt > /dev/null 2>&1; then
+  echo "Error: shfmt is not installed. Please install it first." >&2
+  exit 1
+fi
+
+if [[ $# -eq 0 ]]; then
+  warn "No files specified."
+  lcars-help test:shfmt --flag -h
+  exit 1
+fi
+
+shfmt -d -i 2 -sr -ci "$@"
