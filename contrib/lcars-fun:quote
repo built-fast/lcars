@@ -293,9 +293,7 @@ quotes_all() {
 }
 
 jq:array:random() {
-  local content count
-
-  content="$(cat)"
+  local content="$1" count
 
   count="$(jq -r length <<< "$content")"
 
@@ -305,7 +303,7 @@ jq:array:random() {
 render() {
   local choices="$1" selected author quote
 
-  selected=$(jq:array:random <<< "$choices")
+  selected=$(jq:array:random "$choices")
   author="${selected##* - }"
   quote="${selected% - *}"
 
