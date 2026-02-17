@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# Usage: lcars claude:container:stop [name]
+# Summary: Stops a running claude:container
+#
+# NAME
+#   lcars claude:container:stop -- Stops a running claude:container
+#
+# SYNOPSIS
+#   lcars claude:container:stop [name]
+#
+# DESCRIPTION
+#   lcars claude:container:stop stops a running container started by
+#   lcars claude:container. If no name is given, it defaults to
+#   lcars-claude-<dirname>.
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE[0]##*/}:${LINENO}${FUNCNAME[0]:+:${FUNCNAME[0]}()}] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+case "${1-}" in
+  -h) exec lcars-cli:help --flag "$1" claude:container:stop ;;
+  --help) exec lcars-cli:help --flag "$1" claude:container:stop ;;
+esac
+
+CONTAINER_NAME="${1:-lcars-claude-$(basename "$PWD")}"
+
+if ! docker ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
+  abort "No running container named '$CONTAINER_NAME'."
+fi
+
+echo "Stopping $CONTAINER_NAME..."
+docker stop "$CONTAINER_NAME"
+echo "Done."

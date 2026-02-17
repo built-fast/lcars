@@ -1,0 +1,177 @@
+#!/usr/bin/env bash
+# Usage: lcars claude:container [--build] [--network=NAME] [--name=NAME] [-- claude-args...]
+# Summary: Runs Claude Code in a Docker container with full permissions
+#
+# NAME
+#   lcars claude:container -- Runs Claude Code in a Docker container with full
+#                             permissions
+#
+# SYNOPSIS
+#   lcars claude:container [--build] [--network=NAME] [--name=NAME]
+#                          [-- claude-args...]
+#
+# DESCRIPTION
+#   lcars claude:container launches an ephemeral Docker container with PHP,
+#   Node, Composer, and Claude Code pre-installed. The current directory is
+#   mounted at /workspace and Claude runs with --permission-mode
+#   bypassPermissions.
+#
+#   Authentication is handled automatically by extracting the Claude Code
+#   OAuth token from macOS Keychain and passing it to the container.
+#
+#   The Docker image is built automatically if it doesn't exist or if the
+#   Dockerfile has changed (e.g., after lcars cli:update).
+#
+# OPTIONS
+#   --build
+#       Force rebuild the Docker image before running.
+#
+#   --network <name>
+#       Join an existing Docker network (e.g., myapp_default). Useful for
+#       connecting to services in a docker-compose stack.
+#
+#   --name <name>
+#       Override the container name. Default: lcars-claude-<dirname>.
+#
+#   --
+#       Pass remaining arguments to claude. For example:
+#       lcars claude:container -- --model sonnet
+#       lcars claude:container -- --resume
+#
+# EXAMPLES
+#   lcars claude:container
+#   lcars claude:container --build
+#   lcars claude:container --network myapp_default
+#   lcars claude:container -- --model sonnet
+#   lcars claude:container -- --resume
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE[0]##*/}:${LINENO}${FUNCNAME[0]:+:${FUNCNAME[0]}()}] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+DOCKERFILE="$_LCARS_ROOT/share/lcars/claude/Dockerfile"
+IMAGE_NAME="lcars-claude:latest"
+CONTAINER_NAME="lcars-claude-$(basename "$PWD")"
+FORCE_BUILD=false
+NETWORK=""
+CLAUDE_ARGS=()
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --build)
+      FORCE_BUILD=true
+      shift
+      ;;
+    --network)
+      NETWORK="$2"
+      shift 2
+      ;;
+    --network=*)
+      NETWORK="${1#--network=}"
+      shift
+      ;;
+    --name)
+      CONTAINER_NAME="$2"
+      shift 2
+      ;;
+    --name=*)
+      CONTAINER_NAME="${1#--name=}"
+      shift
+      ;;
+    -h) exec lcars-cli:help --flag "$1" claude:container ;;
+    --help) exec lcars-cli:help --flag "$1" claude:container ;;
+    --)
+      shift
+      CLAUDE_ARGS=("$@")
+      break
+      ;;
+    *)
+      abort "unknown option: $1"
+      ;;
+  esac
+done
+
+# --- Validate prerequisites ---
+
+if ! command -v docker > /dev/null 2>&1; then
+  abort "docker is not installed. Install it from https://docs.docker.com/get-docker/"
+fi
+
+if ! docker info > /dev/null 2>&1; then
+  abort "Docker is not running. Start Docker Desktop or the Docker daemon."
+fi
+
+# --- Extract OAuth token from macOS Keychain ---
+
+OAUTH_TOKEN="$(security find-generic-password -s 'Claude Code-credentials' -w 2> /dev/null || true)"
+
+if [[ -z "$OAUTH_TOKEN" ]]; then
+  abort "No Claude Code OAuth token found in Keychain. Run 'claude' on the host first to authenticate."
+fi
+
+ENV_FILE="$(mktemp)"
+trap 'rm -f "$ENV_FILE"' EXIT
+
+echo "CLAUDE_CODE_OAUTH_TOKEN=${OAUTH_TOKEN}" > "$ENV_FILE"
+
+# --- Build image if needed ---
+
+needs_build() {
+  if [[ "$FORCE_BUILD" == true ]]; then
+    return 0
+  fi
+
+  # Check if image exists
+  if ! docker image inspect "$IMAGE_NAME" > /dev/null 2>&1; then
+    return 0
+  fi
+
+  # Compare Dockerfile hash
+  local current_hash stored_hash
+  current_hash="$(shasum -a 256 "$DOCKERFILE" | cut -d' ' -f1)"
+  stored_hash="$(docker inspect --format '{{ index .Config.Labels "lcars.dockerfile.hash" }}' "$IMAGE_NAME" 2> /dev/null || echo "")"
+
+  [[ "$current_hash" != "$stored_hash" ]]
+}
+
+if needs_build; then
+  echo "Building $IMAGE_NAME..."
+  lcars-claude:container:build
+  echo
+fi
+
+# --- Check for name collision ---
+
+if docker ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
+  abort "Container '$CONTAINER_NAME' is already running. Stop it with: lcars claude:container:stop $CONTAINER_NAME"
+fi
+
+# --- Build docker run command ---
+
+DOCKER_ARGS=(
+  run --rm -it
+  --name "$CONTAINER_NAME"
+  --user "$(id -u):$(id -g)"
+  --env-file "$ENV_FILE"
+  -v "$PWD:/workspace"
+)
+
+# Optional network
+if [[ -n "$NETWORK" ]]; then
+  DOCKER_ARGS+=(--network "$NETWORK")
+fi
+
+DOCKER_ARGS+=("$IMAGE_NAME")
+
+# --- Run ---
+
+exec docker "${DOCKER_ARGS[@]}" --permission-mode bypassPermissions "${CLAUDE_ARGS[@]}"

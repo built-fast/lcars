@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+# Usage: lcars claude:container:build [--no-cache]
+# Summary: Builds the Docker image for claude:container
+#
+# NAME
+#   lcars claude:container:build -- Builds the Docker image for claude:container
+#
+# SYNOPSIS
+#   lcars claude:container:build [--no-cache]
+#
+# DESCRIPTION
+#   lcars claude:container:build builds (or rebuilds) the Docker image used by
+#   lcars claude:container. The image is tagged as lcars-claude:latest and
+#   includes PHP, Node, Composer, and Claude Code.
+#
+#   The image is labeled with a SHA-256 hash of the Dockerfile. The main
+#   claude:container command uses this to detect when the image is stale and
+#   needs rebuilding.
+#
+# OPTIONS
+#   --no-cache
+#       Build without using Docker's layer cache.
+
+if [[ "$LCARS_DEBUG" ]]; then
+  export PS4='+ [${BASH_SOURCE[0]##*/}:${LINENO}${FUNCNAME[0]:+:${FUNCNAME[0]}()}] '
+  set -x
+fi
+
+if [[ -z "$_LCARS_ROOT" ]]; then
+  echo "Error: Must run \`${0//*\/lcars-/lcars }' instead."
+  exit 1
+fi
+
+set -euo pipefail
+
+DOCKERFILE="$_LCARS_ROOT/share/lcars/claude/Dockerfile"
+IMAGE_NAME="lcars-claude:latest"
+
+if ! command -v docker > /dev/null 2>&1; then
+  abort "docker is not installed. Install it from https://docs.docker.com/get-docker/"
+fi
+
+if ! docker info > /dev/null 2>&1; then
+  abort "Docker is not running. Start Docker Desktop or the Docker daemon."
+fi
+
+NO_CACHE=""
+
+for arg in "$@"; do
+  case "$arg" in
+    --no-cache)
+      NO_CACHE="--no-cache"
+      ;;
+    -h) exec lcars-cli:help --flag "$1" claude:container:build ;;
+    --help) exec lcars-cli:help --flag "$1" claude:container:build ;;
+    *)
+      abort "unknown option: $arg"
+      ;;
+  esac
+done
+
+DOCKERFILE_HASH="$(shasum -a 256 "$DOCKERFILE" | cut -d' ' -f1)"
+
+echo "Building $IMAGE_NAME..."
+
+# shellcheck disable=SC2086
+docker buildx \
+  $NO_CACHE \
+  --label "lcars.dockerfile.hash=$DOCKERFILE_HASH" \
+  -t "$IMAGE_NAME" \
+  -f "$DOCKERFILE" \
+  "$_LCARS_ROOT/share/lcars/claude"
+
+echo "Done. Image $IMAGE_NAME is ready."
