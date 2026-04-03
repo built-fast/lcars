@@ -31,6 +31,7 @@ jobs:
           gh workflow run bump-formula.yml \
             -f formula=lcars \
             -f version=${{ env.VERSION }} \
+            -f type=bash \
             -R built-fast/homebrew-devtools
         env:
           # https://github.com/settings/personal-access-tokens
