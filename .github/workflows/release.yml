@@ -26,6 +26,15 @@ jobs:
         with:
           files: pkg/lcars-${{ env.VERSION }}.zip
 
+      - uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2.2.2
+        id: app-token
+        with:
+          app-id: ${{ secrets.BUMP_APP_ID }}
+          private-key: ${{ secrets.BUMP_APP_PRIVATE_KEY }}
+          owner: built-fast
+          repositories: homebrew-devtools
+          permission-actions: write
+
       - name: Update homebrew tap
         run: |
           gh workflow run bump-formula.yml \
@@ -34,5 +43,4 @@ jobs:
             -f type=bash \
             -R built-fast/homebrew-devtools
         env:
-          # https://github.com/settings/personal-access-tokens
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
