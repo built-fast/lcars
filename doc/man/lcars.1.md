@@ -1,6 +1,6 @@
 % LCARS(1) lcars | User Commands
 % 
-% September 2025
+% May 2026
 
 # NAME
 
