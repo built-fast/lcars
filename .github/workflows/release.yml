@@ -11,20 +11,23 @@ jobs:
       actions: write
       contents: write
     runs-on: ubuntu-latest
+    environment: release
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Get version
         id: version
         run: echo "VERSION=${GITHUB_REF##refs/tags/}" >> "$GITHUB_ENV"
 
       - name: Prepare zip archive
-        run: FORMULA=lcars VERSION=${{ env.VERSION }} make archive
+        run: FORMULA=lcars VERSION="$VERSION" make archive
 
-      - name: Upload archive to release
-        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3.0.0
-        with:
-          files: pkg/lcars-${{ env.VERSION }}.zip
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$VERSION" "pkg/lcars-${VERSION}.zip" --generate-notes
 
       - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         id: app-token
@@ -39,7 +42,7 @@ jobs:
         run: |
           gh workflow run bump-formula.yml \
             -f formula=lcars \
-            -f version=${{ env.VERSION }} \
+            -f "version=$VERSION" \
             -f type=bash \
             -R built-fast/homebrew-devtools
         env:
